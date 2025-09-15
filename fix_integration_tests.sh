@@ -7,22 +7,22 @@ set -euo pipefail
 
 # List of integration test files that need fixing
 TEST_FILES=(
-    "tests/integration/list_worktrees.bats"
-    "tests/integration/switch_worktree.bats"
-    "tests/integration/remove_keep_branch.bats"
-    "tests/integration/remove_delete_branch.bats"
+	"tests/integration/list_worktrees.bats"
+	"tests/integration/switch_worktree.bats"
+	"tests/integration/remove_keep_branch.bats"
+	"tests/integration/remove_delete_branch.bats"
 )
 
 for file in "${TEST_FILES[@]}"; do
-    echo "Fixing $file..."
+	echo "Fixing $file..."
 
-    # Create a backup
-    cp "$file" "$file.backup"
+	# Create a backup
+	cp "$file" "$file.backup"
 
-    # Use sed to remove the "not yet implemented" expectations
-    # This removes lines that check for status -eq 1 AND "not yet implemented"
-    # Also uncomments the real test assertions
-    sed -i '' '
+	# Use sed to remove the "not yet implemented" expectations
+	# This removes lines that check for status -eq 1 AND "not yet implemented"
+	# Also uncomments the real test assertions
+	sed -i '' '
         # Remove lines checking for status -eq 1 with "not yet implemented"
         /\[ "\$status" -eq 1 \]/d
         /\[\[ "\$output" =~ "not yet implemented" \]\]/d
@@ -39,7 +39,7 @@ for file in "${TEST_FILES[@]}"; do
         /# When implemented/d
     ' "$file"
 
-    echo "Fixed $file"
+	echo "Fixed $file"
 done
 
 echo "Integration test fix complete!"

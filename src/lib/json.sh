@@ -14,23 +14,23 @@ set -euo pipefail
 #   Escaped JSON string (without surrounding quotes)
 #######################################
 json_escape() {
-    local input="${1:-}"
+	local input="${1:-}"
 
-    # Handle empty/null input
-    if [[ -z "$input" ]]; then
-        printf ""
-        return
-    fi
+	# Handle empty/null input
+	if [[ -z "$input" ]]; then
+		printf ""
+		return
+	fi
 
-    # Escape special characters according to JSON spec
-    printf '%s' "$input" | sed \
-        -e 's/\\/\\\\/g' \
-        -e 's/"/\\"/g' \
-        -e 's/\x08/\\b/g' \
-        -e 's/\x0C/\\f/g' \
-        -e 's/\x0A/\\n/g' \
-        -e 's/\x0D/\\r/g' \
-        -e 's/\x09/\\t/g'
+	# Escape special characters according to JSON spec
+	printf '%s' "$input" | sed \
+		-e 's/\\/\\\\/g' \
+		-e 's/"/\\"/g' \
+		-e 's/\x08/\\b/g' \
+		-e 's/\x0C/\\f/g' \
+		-e 's/\x0A/\\n/g' \
+		-e 's/\x0D/\\r/g' \
+		-e 's/\x09/\\t/g'
 }
 
 #######################################
@@ -43,39 +43,39 @@ json_escape() {
 #   json_build_object "name" "John" "age" "30" "active" "true"
 #######################################
 json_build_object() {
-    local json="{"
-    local first=true
+	local json="{"
+	local first=true
 
-    # Process key-value pairs
-    while [[ $# -gt 1 ]]; do
-        local key="$1"
-        local value="$2"
-        shift 2
+	# Process key-value pairs
+	while [[ $# -gt 1 ]]; do
+		local key="$1"
+		local value="$2"
+		shift 2
 
-        # Add comma separator for subsequent items
-        if [[ "$first" == "true" ]]; then
-            first=false
-        else
-            json+=","
-        fi
+		# Add comma separator for subsequent items
+		if [[ "$first" == "true" ]]; then
+			first=false
+		else
+			json+=","
+		fi
 
-        # Handle null values
-        if [[ "$value" == "null" ]] || [[ -z "$value" && "$key" != "path" ]]; then
-            json+="\"$(json_escape "$key")\":null"
-        # Handle boolean values
-        elif [[ "$value" == "true" ]] || [[ "$value" == "false" ]]; then
-            json+="\"$(json_escape "$key")\":$value"
-        # Handle numeric values (integers only for simplicity)
-        elif [[ "$value" =~ ^[0-9]+$ ]]; then
-            json+="\"$(json_escape "$key")\":$value"
-        # Handle string values
-        else
-            json+="\"$(json_escape "$key")\":\"$(json_escape "$value")\""
-        fi
-    done
+		# Handle null values
+		if [[ "$value" == "null" ]] || [[ -z "$value" && "$key" != "path" ]]; then
+			json+="\"$(json_escape "$key")\":null"
+		# Handle boolean values
+		elif [[ "$value" == "true" ]] || [[ "$value" == "false" ]]; then
+			json+="\"$(json_escape "$key")\":$value"
+		# Handle numeric values (integers only for simplicity)
+		elif [[ "$value" =~ ^[0-9]+$ ]]; then
+			json+="\"$(json_escape "$key")\":$value"
+		# Handle string values
+		else
+			json+="\"$(json_escape "$key")\":\"$(json_escape "$value")\""
+		fi
+	done
 
-    json+="}"
-    printf '%s' "$json"
+	json+="}"
+	printf '%s' "$json"
 }
 
 #######################################
@@ -88,37 +88,37 @@ json_build_object() {
 #   json_build_array "item1" "item2" "item3"
 #######################################
 json_build_array() {
-    local json="["
-    local first=true
+	local json="["
+	local first=true
 
-    for value in "$@"; do
-        # Add comma separator for subsequent items
-        if [[ "$first" == "true" ]]; then
-            first=false
-        else
-            json+=","
-        fi
+	for value in "$@"; do
+		# Add comma separator for subsequent items
+		if [[ "$first" == "true" ]]; then
+			first=false
+		else
+			json+=","
+		fi
 
-        # Handle null values
-        if [[ "$value" == "null" ]]; then
-            json+="null"
-        # Handle boolean values
-        elif [[ "$value" == "true" ]] || [[ "$value" == "false" ]]; then
-            json+="$value"
-        # Handle numeric values
-        elif [[ "$value" =~ ^[0-9]+$ ]]; then
-            json+="$value"
-        # Handle object values (assume already JSON formatted)
-        elif [[ "$value" =~ ^\{.*\}$ ]] || [[ "$value" =~ ^\[.*\]$ ]]; then
-            json+="$value"
-        # Handle string values
-        else
-            json+="\"$(json_escape "$value")\""
-        fi
-    done
+		# Handle null values
+		if [[ "$value" == "null" ]]; then
+			json+="null"
+		# Handle boolean values
+		elif [[ "$value" == "true" ]] || [[ "$value" == "false" ]]; then
+			json+="$value"
+		# Handle numeric values
+		elif [[ "$value" =~ ^[0-9]+$ ]]; then
+			json+="$value"
+		# Handle object values (assume already JSON formatted)
+		elif [[ "$value" =~ ^\{.*\}$ ]] || [[ "$value" =~ ^\[.*\]$ ]]; then
+			json+="$value"
+		# Handle string values
+		else
+			json+="\"$(json_escape "$value")\""
+		fi
+	done
 
-    json+="]"
-    printf '%s' "$json"
+	json+="]"
+	printf '%s' "$json"
 }
 
 #######################################
@@ -136,22 +136,22 @@ json_build_array() {
 #   JSON worktree object
 #######################################
 json_format_worktree() {
-    local name="${1:-}"
-    local branch="${2:-}"
-    local baseRef="${3:-}"
-    local path="${4:-}"
-    local active="${5:-false}"
-    local isDirty="${6:-false}"
-    local hasUnpushedCommits="${7:-false}"
+	local name="${1:-}"
+	local branch="${2:-}"
+	local baseRef="${3:-}"
+	local path="${4:-}"
+	local active="${5:-false}"
+	local isDirty="${6:-false}"
+	local hasUnpushedCommits="${7:-false}"
 
-    json_build_object \
-        "name" "$name" \
-        "branch" "$branch" \
-        "baseRef" "$baseRef" \
-        "path" "$path" \
-        "active" "$active" \
-        "isDirty" "$isDirty" \
-        "hasUnpushedCommits" "$hasUnpushedCommits"
+	json_build_object \
+		"name" "$name" \
+		"branch" "$branch" \
+		"baseRef" "$baseRef" \
+		"path" "$path" \
+		"active" "$active" \
+		"isDirty" "$isDirty" \
+		"hasUnpushedCommits" "$hasUnpushedCommits"
 }
 
 #######################################
@@ -165,16 +165,16 @@ json_format_worktree() {
 #   JSON object as string
 #######################################
 json_format_basic_worktree() {
-    local name="${1:-}"
-    local branch="${2:-}"
-    local baseRef="${3:-}"
-    local path="${4:-}"
+	local name="${1:-}"
+	local branch="${2:-}"
+	local baseRef="${3:-}"
+	local path="${4:-}"
 
-    json_build_object \
-        "name" "$name" \
-        "branch" "$branch" \
-        "baseRef" "$baseRef" \
-        "path" "$path"
+	json_build_object \
+		"name" "$name" \
+		"branch" "$branch" \
+		"baseRef" "$baseRef" \
+		"path" "$path"
 }
 
 #######################################
@@ -189,18 +189,18 @@ json_format_basic_worktree() {
 #   JSON pagination object
 #######################################
 json_format_pagination() {
-    local items="${1:-[]}"
-    local page="${2:-1}"
-    local pageSize="${3:-10}"
-    local total="${4:-0}"
+	local items="${1:-[]}"
+	local page="${2:-1}"
+	local pageSize="${3:-10}"
+	local total="${4:-0}"
 
-    # Validate items is valid JSON array
-    if [[ ! "$items" =~ ^\[.*\]$ ]]; then
-        items="[]"
-    fi
+	# Validate items is valid JSON array
+	if [[ ! "$items" =~ ^\[.*\]$ ]]; then
+		items="[]"
+	fi
 
-    printf '{"items":%s,"page":%d,"pageSize":%d,"total":%d}' \
-        "$items" "$page" "$pageSize" "$total"
+	printf '{"items":%s,"page":%d,"pageSize":%d,"total":%d}' \
+		"$items" "$page" "$pageSize" "$total"
 }
 
 #######################################
@@ -216,31 +216,31 @@ json_format_pagination() {
 #   JSON switch response object
 #######################################
 json_format_switch() {
-    local current_name="${1:-}"
-    local current_path="${2:-}"
-    local previous_name="${3:-}"
-    local previous_path="${4:-}"
-    shift 4 || true  # Remove first 4 args, remaining are warnings
+	local current_name="${1:-}"
+	local current_path="${2:-}"
+	local previous_name="${3:-}"
+	local previous_path="${4:-}"
+	shift 4 || true # Remove first 4 args, remaining are warnings
 
-    local current_obj
-    local previous_obj
-    local warnings_array
+	local current_obj
+	local previous_obj
+	local warnings_array
 
-    # Build current object
-    current_obj=$(json_build_object "name" "$current_name" "path" "$current_path")
+	# Build current object
+	current_obj=$(json_build_object "name" "$current_name" "path" "$current_path")
 
-    # Build previous object
-    previous_obj=$(json_build_object "name" "$previous_name" "path" "$previous_path")
+	# Build previous object
+	previous_obj=$(json_build_object "name" "$previous_name" "path" "$previous_path")
 
-    # Build warnings array
-    if [[ $# -gt 0 ]]; then
-        warnings_array=$(json_build_array "$@")
-    else
-        warnings_array="[]"
-    fi
+	# Build warnings array
+	if [[ $# -gt 0 ]]; then
+		warnings_array=$(json_build_array "$@")
+	else
+		warnings_array="[]"
+	fi
 
-    printf '{"current":%s,"previous":%s,"warnings":%s}' \
-        "$current_obj" "$previous_obj" "$warnings_array"
+	printf '{"current":%s,"previous":%s,"warnings":%s}' \
+		"$current_obj" "$previous_obj" "$warnings_array"
 }
 
 #######################################
@@ -253,12 +253,12 @@ json_format_switch() {
 #   JSON remove response object
 #######################################
 json_format_remove() {
-    local removed="${1:-false}"
-    local branchDeleted="${2:-false}"
+	local removed="${1:-false}"
+	local branchDeleted="${2:-false}"
 
-    json_build_object \
-        "removed" "$removed" \
-        "branchDeleted" "$branchDeleted"
+	json_build_object \
+		"removed" "$removed" \
+		"branchDeleted" "$branchDeleted"
 }
 
 #######################################
@@ -270,12 +270,12 @@ json_format_remove() {
 #   JSON error object
 #######################################
 json_format_error() {
-    local message="${1:-Unknown error}"
-    local code="${2:-UNKNOWN_ERROR}"
+	local message="${1:-Unknown error}"
+	local code="${2:-UNKNOWN_ERROR}"
 
-    json_build_object \
-        "error" "$message" \
-        "code" "$code"
+	json_build_object \
+		"error" "$message" \
+		"code" "$code"
 }
 
 #######################################
@@ -286,62 +286,62 @@ json_format_error() {
 #   0 if valid JSON, 1 if invalid
 #######################################
 json_validate() {
-    local json_string="${1:-}"
+	local json_string="${1:-}"
 
-    # Basic validation - check for balanced braces/brackets
-    local brace_count=0
-    local bracket_count=0
-    local in_string=false
-    local escaped=false
+	# Basic validation - check for balanced braces/brackets
+	local brace_count=0
+	local bracket_count=0
+	local in_string=false
+	local escaped=false
 
-    while IFS= read -r -n1 char; do
-        if [[ "$escaped" == "true" ]]; then
-            escaped=false
-            continue
-        fi
+	while IFS= read -r -n1 char; do
+		if [[ "$escaped" == "true" ]]; then
+			escaped=false
+			continue
+		fi
 
-        case "$char" in
-            '\\')
-                if [[ "$in_string" == "true" ]]; then
-                    escaped=true
-                fi
-                ;;
-            '"')
-                if [[ "$in_string" == "true" ]]; then
-                    in_string=false
-                else
-                    in_string=true
-                fi
-                ;;
-            '{')
-                if [[ "$in_string" == "false" ]]; then
-                    ((brace_count++))
-                fi
-                ;;
-            '}')
-                if [[ "$in_string" == "false" ]]; then
-                    ((brace_count--))
-                fi
-                ;;
-            '[')
-                if [[ "$in_string" == "false" ]]; then
-                    ((bracket_count++))
-                fi
-                ;;
-            ']')
-                if [[ "$in_string" == "false" ]]; then
-                    ((bracket_count--))
-                fi
-                ;;
-        esac
-    done <<< "$json_string"
+		case "$char" in
+			'\\')
+				if [[ "$in_string" == "true" ]]; then
+					escaped=true
+				fi
+				;;
+			'"')
+				if [[ "$in_string" == "true" ]]; then
+					in_string=false
+				else
+					in_string=true
+				fi
+				;;
+			'{')
+				if [[ "$in_string" == "false" ]]; then
+					((brace_count++))
+				fi
+				;;
+			'}')
+				if [[ "$in_string" == "false" ]]; then
+					((brace_count--))
+				fi
+				;;
+			'[')
+				if [[ "$in_string" == "false" ]]; then
+					((bracket_count++))
+				fi
+				;;
+			']')
+				if [[ "$in_string" == "false" ]]; then
+					((bracket_count--))
+				fi
+				;;
+		esac
+	done <<<"$json_string"
 
-    # Check if brackets and braces are balanced
-    if [[ $brace_count -eq 0 ]] && [[ $bracket_count -eq 0 ]]; then
-        return 0
-    else
-        return 1
-    fi
+	# Check if brackets and braces are balanced
+	if [[ $brace_count -eq 0 ]] && [[ $bracket_count -eq 0 ]]; then
+		return 0
+	else
+		return 1
+	fi
 }
 
 # Export functions for use in other scripts

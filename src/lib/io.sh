@@ -30,18 +30,18 @@ readonly PROGRAM_NAME="${0##*/}"
 # Uses red color if terminal supports colors.
 #
 log_error() {
-    local message="$1"
-    local timestamp
-    timestamp=$(date '+%Y-%m-%d %H:%M:%S')
+	local message="$1"
+	local timestamp
+	timestamp=$(date '+%Y-%m-%d %H:%M:%S')
 
-    if [[ -t 2 ]]; then
-        # Terminal supports colors
-        printf "${COLOR_RED}[ERROR]${COLOR_NC} %s - %s: %s\n" \
-            "$timestamp" "$PROGRAM_NAME" "$message" >&2
-    else
-        printf "[ERROR] %s - %s: %s\n" \
-            "$timestamp" "$PROGRAM_NAME" "$message" >&2
-    fi
+	if [[ -t 2 ]]; then
+		# Terminal supports colors
+		printf "${COLOR_RED}[ERROR]${COLOR_NC} %s - %s: %s\n" \
+			"$timestamp" "$PROGRAM_NAME" "$message" >&2
+	else
+		printf "[ERROR] %s - %s: %s\n" \
+			"$timestamp" "$PROGRAM_NAME" "$message" >&2
+	fi
 }
 
 #
@@ -53,18 +53,18 @@ log_error() {
 # Uses yellow color if terminal supports colors.
 #
 log_warning() {
-    local message="$1"
-    local timestamp
-    timestamp=$(date '+%Y-%m-%d %H:%M:%S')
+	local message="$1"
+	local timestamp
+	timestamp=$(date '+%Y-%m-%d %H:%M:%S')
 
-    if [[ -t 2 ]]; then
-        # Terminal supports colors
-        printf "${COLOR_YELLOW}[WARNING]${COLOR_NC} %s - %s: %s\n" \
-            "$timestamp" "$PROGRAM_NAME" "$message" >&2
-    else
-        printf "[WARNING] %s - %s: %s\n" \
-            "$timestamp" "$PROGRAM_NAME" "$message" >&2
-    fi
+	if [[ -t 2 ]]; then
+		# Terminal supports colors
+		printf "${COLOR_YELLOW}[WARNING]${COLOR_NC} %s - %s: %s\n" \
+			"$timestamp" "$PROGRAM_NAME" "$message" >&2
+	else
+		printf "[WARNING] %s - %s: %s\n" \
+			"$timestamp" "$PROGRAM_NAME" "$message" >&2
+	fi
 }
 
 #
@@ -76,18 +76,18 @@ log_warning() {
 # Uses blue color if terminal supports colors.
 #
 log_info() {
-    local message="$1"
-    local timestamp
-    timestamp=$(date '+%Y-%m-%d %H:%M:%S')
+	local message="$1"
+	local timestamp
+	timestamp=$(date '+%Y-%m-%d %H:%M:%S')
 
-    if [[ -t 2 ]]; then
-        # Terminal supports colors
-        printf "${COLOR_BLUE}[INFO]${COLOR_NC} %s - %s: %s\n" \
-            "$timestamp" "$PROGRAM_NAME" "$message" >&2
-    else
-        printf "[INFO] %s - %s: %s\n" \
-            "$timestamp" "$PROGRAM_NAME" "$message" >&2
-    fi
+	if [[ -t 2 ]]; then
+		# Terminal supports colors
+		printf "${COLOR_BLUE}[INFO]${COLOR_NC} %s - %s: %s\n" \
+			"$timestamp" "$PROGRAM_NAME" "$message" >&2
+	else
+		printf "[INFO] %s - %s: %s\n" \
+			"$timestamp" "$PROGRAM_NAME" "$message" >&2
+	fi
 }
 
 #
@@ -107,32 +107,32 @@ log_info() {
 #   - not_found: 6
 #
 get_exit_code() {
-    local error_type="$1"
+	local error_type="$1"
 
-    case "$error_type" in
-        "success")
-            echo "$EXIT_SUCCESS"
-            ;;
-        "validation")
-            echo "$EXIT_VALIDATION_ERROR"
-            ;;
-        "precondition")
-            echo "$EXIT_PRECONDITION_FAILURE"
-            ;;
-        "conflict")
-            echo "$EXIT_CONFLICT"
-            ;;
-        "unsafe")
-            echo "$EXIT_UNSAFE_STATE"
-            ;;
-        "not_found")
-            echo "$EXIT_NOT_FOUND"
-            ;;
-        *)
-            log_error "Unknown error type: $error_type"
-            echo "$EXIT_VALIDATION_ERROR"
-            ;;
-    esac
+	case "$error_type" in
+		"success")
+			echo "$EXIT_SUCCESS"
+			;;
+		"validation")
+			echo "$EXIT_VALIDATION_ERROR"
+			;;
+		"precondition")
+			echo "$EXIT_PRECONDITION_FAILURE"
+			;;
+		"conflict")
+			echo "$EXIT_CONFLICT"
+			;;
+		"unsafe")
+			echo "$EXIT_UNSAFE_STATE"
+			;;
+		"not_found")
+			echo "$EXIT_NOT_FOUND"
+			;;
+		*)
+			log_error "Unknown error type: $error_type"
+			echo "$EXIT_VALIDATION_ERROR"
+			;;
+	esac
 }
 
 #
@@ -149,24 +149,24 @@ get_exit_code() {
 #   exit_with_code "not_found" "File not found: config.yml"
 #
 exit_with_code() {
-    local error_type="$1"
-    local message="${2:-}"
-    local exit_code
+	local error_type="$1"
+	local message="${2:-}"
+	local exit_code
 
-    exit_code=$(get_exit_code "$error_type")
+	exit_code=$(get_exit_code "$error_type")
 
-    if [[ -n "$message" ]]; then
-        case "$error_type" in
-            "success")
-                log_info "$message"
-                ;;
-            *)
-                log_error "$message"
-                ;;
-        esac
-    fi
+	if [[ -n "$message" ]]; then
+		case "$error_type" in
+			"success")
+				log_info "$message"
+				;;
+			*)
+				log_error "$message"
+				;;
+		esac
+	fi
 
-    exit "$exit_code"
+	exit "$exit_code"
 }
 
 #
@@ -178,7 +178,7 @@ exit_with_code() {
 # Useful for conditional color/formatting output.
 #
 is_terminal() {
-    [[ -t 1 ]]
+	[[ -t 1 ]]
 }
 
 #
@@ -190,7 +190,7 @@ is_terminal() {
 # Useful for conditional color/formatting in error output.
 #
 is_error_terminal() {
-    [[ -t 2 ]]
+	[[ -t 2 ]]
 }
 
 # Export functions for use by other scripts
