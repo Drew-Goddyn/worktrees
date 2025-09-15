@@ -10,6 +10,26 @@ set -euo pipefail
 # Format: "name|path|branch|head"
 WORKTREE_DATA=()
 
+# Global associative array for status caching (bash 4.0+)
+if [[ ${BASH_VERSION%%.*} -ge 4 ]]; then
+    declare -A WORKTREE_STATUS_CACHE
+else
+    # Fallback for older bash versions - disable caching
+    WORKTREE_STATUS_CACHE=""
+fi
+
+#
+# clear_worktree_status_cache()
+#
+# Clears the worktree status cache to force fresh computations
+#
+clear_worktree_status_cache() {
+    if [[ ${BASH_VERSION%%.*} -ge 4 ]]; then
+        unset WORKTREE_STATUS_CACHE
+        declare -gA WORKTREE_STATUS_CACHE
+    fi
+}
+
 #
 # parse_worktree_list()
 #
@@ -22,8 +42,9 @@ WORKTREE_DATA=()
 # branch refs/heads/<branch-name>  [or detached HEAD info]
 #
 parse_worktree_list() {
-    # Clear global array
+    # Clear global array and status cache
     WORKTREE_DATA=()
+    clear_worktree_status_cache
 
     local current_path=""
     local current_head=""
@@ -101,6 +122,13 @@ get_worktree_status() {
         return 1
     fi
 
+    # Check cache first (if available)
+    if [[ ${BASH_VERSION%%.*} -ge 4 ]] && [[ -n "${WORKTREE_STATUS_CACHE[$name]:-}" ]]; then
+        # Update WORKTREE_DATA with cached status
+        WORKTREE_DATA[$index]="${WORKTREE_STATUS_CACHE[$name]}"
+        return 0
+    fi
+
     # Extract current data
     IFS='|' read -r name path branch head existing_status <<< "${WORKTREE_DATA[$index]}"
 
@@ -166,6 +194,11 @@ get_worktree_status() {
 
     # Return to original directory
     cd "$original_pwd"
+
+    # Cache the computed status (if available)
+    if [[ ${BASH_VERSION%%.*} -ge 4 ]]; then
+        WORKTREE_STATUS_CACHE[$name]="${WORKTREE_DATA[$index]}"
+    fi
 }
 
 #

@@ -155,6 +155,29 @@ json_format_worktree() {
 }
 
 #######################################
+# Format worktree data as JSON without expensive status fields
+# Arguments:
+#   $1 - name
+#   $2 - branch
+#   $3 - baseRef
+#   $4 - path
+# Returns:
+#   JSON object as string
+#######################################
+json_format_basic_worktree() {
+    local name="${1:-}"
+    local branch="${2:-}"
+    local baseRef="${3:-}"
+    local path="${4:-}"
+
+    json_build_object \
+        "name" "$name" \
+        "branch" "$branch" \
+        "baseRef" "$baseRef" \
+        "path" "$path"
+}
+
+#######################################
 # Format a pagination response per OpenAPI schema
 # Schema: {items: [...], page, pageSize, total}
 # Arguments:
@@ -326,6 +349,7 @@ export -f json_escape
 export -f json_build_object
 export -f json_build_array
 export -f json_format_worktree
+export -f json_format_basic_worktree
 export -f json_format_pagination
 export -f json_format_switch
 export -f json_format_remove

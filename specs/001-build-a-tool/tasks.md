@@ -135,7 +135,7 @@
   - File: `/Users/drewgoddyn/projects/claude-worktrees/tests/unit/feature_name_test.bats`
 - [x] T027 [P] Unit tests: default base detection
   - File: `/Users/drewgoddyn/projects/claude-worktrees/tests/unit/repository_test.bats`
-- [ ] T028 [P] Implement list paging caps and performance guards
+- [x] T028 [P] Implement list paging caps and performance guards
   - Files: `/Users/drewgoddyn/projects/claude-worktrees/src/cli/worktrees`, `/Users/drewgoddyn/projects/claude-worktrees/src/services/worktree_service.sh`
 - [ ] T029 [P] Documentation pass
   - Update quickstart examples in `/Users/drewgoddyn/projects/claude-worktrees/specs/001-build-a-tool/quickstart.md` and create README at `/Users/drewgoddyn/projects/claude-worktrees/README.md`

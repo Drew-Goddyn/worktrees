@@ -76,7 +76,8 @@ OPTIONS:
     --filter-name <pattern>    Filter worktrees by name pattern
     --filter-base <branch>     Filter by base branch
     --page <number>            Page number for pagination [default: 1]
-    --page-size <size>         Items per page [default: 10, max: 50]
+    --page-size <size>         Items per page [default: 20, max: 100]
+    --no-status                Skip expensive status checks (faster for large repos)
     --root <path>              Root directory for worktrees [default: ~/.worktrees]
     --format <format>          Output format (text|json) [default: text]
     --help, -h                 Show this help message
@@ -775,6 +776,7 @@ handle_list_command() {
     local page="1"
     local page_size="20"
     local root_path=""
+    local include_status="true"
 
     # Parse list-specific arguments
     while [[ $# -gt 0 ]]; do
@@ -819,6 +821,10 @@ handle_list_command() {
                 root_path="$2"
                 shift 2
                 ;;
+            --no-status)
+                include_status="false"
+                shift
+                ;;
             *)
                 log_error "Error: Unknown option for list command: $1"
                 exit_with_code "validation"
@@ -851,6 +857,15 @@ handle_list_command() {
         all_names+=("$name")
     done < <(list_worktree_names)
 
+    # Performance guard: warn about large repositories
+    local total_worktrees=${#all_names[@]}
+    if [[ $total_worktrees -gt 100 ]]; then
+        log_warning "Large repository detected ($total_worktrees worktrees). Consider using filters to improve performance."
+        if [[ "$include_status" == "true" ]]; then
+            log_info "Use --no-status flag to skip expensive status checks and improve performance."
+        fi
+    fi
+
     # Apply filters
     local filtered_names=()
     for name in "${all_names[@]}"; do
@@ -882,9 +897,9 @@ handle_list_command() {
     # Format output
     if [[ "$format" == "json" ]]; then
         if [[ ${#page_names[@]} -eq 0 ]]; then
-            format_json_output "$total" "$page" "$page_size"
+            format_json_output "$total" "$page" "$page_size" "$include_status"
         else
-            format_json_output "$total" "$page" "$page_size" "${page_names[@]}"
+            format_json_output "$total" "$page" "$page_size" "$include_status" "${page_names[@]}"
         fi
     else
         if [[ ${#page_names[@]} -eq 0 ]]; then
@@ -911,7 +926,8 @@ format_json_output() {
     local total="$1"
     local page="$2"
     local page_size="$3"
-    shift 3
+    local include_status="$4"
+    shift 4
     local names=()
     if [[ $# -gt 0 ]]; then
         names=("$@")
@@ -927,18 +943,21 @@ format_json_output() {
             items_array+=","
         fi
 
-        local branch path is_active is_dirty has_unpushed base_ref
+        local branch path base_ref worktree_obj
         branch=$(get_worktree_field "$name" "branch")
         path=$(get_worktree_field "$name" "path")
-        is_active=$(get_worktree_field "$name" "isActive")
-        is_dirty=$(get_worktree_field "$name" "isDirty")
-        has_unpushed=$(get_worktree_field "$name" "hasUnpushedCommits")
+        base_ref="$branch"  # For baseRef, we'll use the branch for now
 
-        # For baseRef, we'll use the branch for now (this could be enhanced later)
-        base_ref="$branch"
-
-        local worktree_obj
-        worktree_obj=$(json_format_worktree "$name" "$branch" "$base_ref" "$path" "$is_active" "$is_dirty" "$has_unpushed")
+        if [[ "$include_status" == "true" ]]; then
+            local is_active is_dirty has_unpushed
+            is_active=$(get_worktree_field "$name" "isActive")
+            is_dirty=$(get_worktree_field "$name" "isDirty")
+            has_unpushed=$(get_worktree_field "$name" "hasUnpushedCommits")
+            worktree_obj=$(json_format_worktree "$name" "$branch" "$base_ref" "$path" "$is_active" "$is_dirty" "$has_unpushed")
+        else
+            # Format without expensive status fields
+            worktree_obj=$(json_format_basic_worktree "$name" "$branch" "$base_ref" "$path")
+        fi
         items_array+="$worktree_obj"
     done
 
