@@ -131,7 +131,7 @@
   - Implement: default `$HOME/.worktrees`, `WORKTREES_ROOT` and `--root` override; create if missing
 
 ## Phase 3.5: Polish
-- [ ] T026 [P] Unit tests: FeatureName validation rules
+- [x] T026 [P] Unit tests: FeatureName validation rules
   - File: `/Users/drewgoddyn/projects/claude-worktrees/tests/unit/feature_name_test.bats`
 - [ ] T027 [P] Unit tests: default base detection
   - File: `/Users/drewgoddyn/projects/claude-worktrees/tests/unit/repository_test.bats`
