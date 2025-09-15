@@ -411,150 +411,75 @@ handle_remove_command() {
         exit_with_code "precondition"
     fi
 
+    # Source service layer
+    local script_dir
+    script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    if ! source "$script_dir/../services/worktree_service.sh"; then
+        log_error "Failed to load worktree service"
+        exit_with_code "operation_failed"
+    fi
+
     # Parse worktrees from git
     parse_worktree_list
 
-    # Check if target worktree exists
-    if ! worktree_exists "$target_name"; then
-        log_error "Worktree '$target_name' not found"
-        exit_with_code "not_found"
+    # Get branch name for logging
+    local branch_name
+    if worktree_exists "$target_name"; then
+        branch_name=$(get_worktree_field "$target_name" "branch")
     fi
 
-    # Get target worktree information
-    local target_path branch_name
-    target_path=$(get_worktree_field "$target_name" "path")
-    branch_name=$(get_worktree_field "$target_name" "branch")
+    # Use service layer for removal
+    local remove_result
+    local service_exit_code=0
 
-    # Check if target path exists
-    if [[ ! -d "$target_path" ]]; then
-        log_warning "Worktree directory does not exist: $target_path"
-    fi
-
-    # Check if we're trying to remove the current worktree
-    if is_worktree_active "$target_name"; then
-        log_error "Cannot remove the currently active worktree '$target_name'"
-        log_error "Switch to a different worktree first"
-        exit_with_code "unsafe"
-    fi
-
-    # Perform safety checks
-    local safety_violations=()
-    local is_dirty has_untracked has_unpushed op_in_progress upstream
-
-    is_dirty=$(get_worktree_field "$target_name" "isDirty")
-    has_untracked=$(get_worktree_field "$target_name" "hasUntracked")
-    has_unpushed=$(get_worktree_field "$target_name" "hasUnpushedCommits")
-    op_in_progress=$(get_worktree_field "$target_name" "opInProgress")
-    upstream=$(get_worktree_field "$target_name" "upstream")
-
-    # Check for tracked changes (never allowed, even with --force)
-    if [[ "$is_dirty" == "true" ]]; then
-        safety_violations+=("Worktree has uncommitted changes")
-    fi
-
-    # Check for operation in progress (never allowed, even with --force)
-    if [[ "$op_in_progress" != "none" ]]; then
-        safety_violations+=("Worktree has operation in progress: $op_in_progress")
-    fi
-
-    # Check for unpushed commits (never allowed, even with --force)
-    if [[ "$has_unpushed" == "true" ]]; then
-        safety_violations+=("Worktree has unpushed commits")
-    fi
-
-    # Note: No upstream tracking is not a safety violation by itself
-    # It just means the branch is purely local, which is fine to remove
-
-    # Report safety violations
-    if [[ ${#safety_violations[@]} -gt 0 ]]; then
-        log_error "Cannot remove worktree '$target_name' due to safety violations:"
-        for violation in "${safety_violations[@]}"; do
-            log_error "  - $violation"
-        done
-        log_error "Commit and push changes, or complete any operations in progress first"
-        exit_with_code "unsafe"
-    fi
-
-    # Check for untracked files (allowed with --force)
-    if [[ "$has_untracked" == "true" && "$force" != "true" ]]; then
-        log_error "Worktree has untracked files"
-        log_error "Use --force to allow removal with untracked files"
-        exit_with_code "unsafe"
-    fi
-
-    # Validate branch deletion requirements
-    local branch_will_be_deleted=false
-    if [[ "$delete_branch" == "true" && "$branch_name" != "(detached)" ]]; then
-        # Set default merged_into if not specified
-        if [[ -z "$merged_into" ]]; then
-            if ! merged_into=$(get_default_branch); then
-                log_error "Could not determine default branch for merge check. Please specify with --merged-into"
-                exit_with_code "precondition"
-            fi
-        fi
-
-        # Check if branch is fully merged
-        if git merge-base --is-ancestor "$branch_name" "$merged_into" 2>/dev/null; then
-            branch_will_be_deleted=true
-            log_info "Branch '$branch_name' is fully merged into '$merged_into' and will be deleted"
-        else
-            log_error "Branch '$branch_name' is not fully merged into '$merged_into'"
-            log_error "Cannot delete branch that is not fully merged"
-            exit_with_code "unsafe"
-        fi
-    fi
-
-    # Perform the removal
-    local removal_success=false
-    local branch_deletion_success=false
-
-    # Remove the worktree
-    local git_remove_cmd=("git" "worktree" "remove")
-    if [[ "$force" == "true" ]]; then
-        git_remove_cmd+=("--force")
-    fi
-    git_remove_cmd+=("$target_path")
-
-    if "${git_remove_cmd[@]}" 2>/dev/null; then
-        removal_success=true
-        log_info "Successfully removed worktree: $target_name"
+    # Call service layer remove function
+    if remove_result=$(remove_worktree "$target_name" "$force" "$delete_branch" "$merged_into" 2>&1); then
+        service_exit_code=0
     else
-        log_error "Failed to remove worktree: $target_name"
-        exit_with_code "precondition"
+        service_exit_code=$?
     fi
 
-    # Delete the branch if requested and safe
-    if [[ "$branch_will_be_deleted" == "true" ]]; then
-        if git branch -d "$branch_name" 2>/dev/null; then
-            branch_deletion_success=true
-            log_info "Successfully deleted branch: $branch_name"
+    # Handle service layer response
+    if [[ $service_exit_code -ne 0 ]]; then
+        # Parse error from service layer and log appropriately
+        local error_msg
+        error_msg=$(echo "$remove_result" | grep -o '"error": "[^"]*"' | cut -d'"' -f4)
+
+        if [[ -n "$error_msg" ]]; then
+            log_error "$error_msg"
         else
-            log_warning "Worktree removed but failed to delete branch: $branch_name"
-            # Don't exit - worktree removal succeeded
+            log_error "Failed to remove worktree"
         fi
+
+        # Map service error codes to CLI exit codes
+        case $service_exit_code in
+            10) exit_with_code "validation" ;;
+            12) exit_with_code "not_found" ;;
+            15) exit_with_code "unsafe" ;;
+            *) exit_with_code "operation_failed" ;;
+        esac
     fi
+
+    # Parse success response
+    local removed branch_deleted
+    removed=$(echo "$remove_result" | grep -o '"removed": [^,}]*' | cut -d':' -f2 | tr -d ' ')
+    branch_deleted=$(echo "$remove_result" | grep -o '"branchDeleted": [^,}]*' | cut -d':' -f2 | tr -d ' ')
 
     # Format output
     if [[ "$format" == "json" ]]; then
         local json_output
-        json_output=$(json_format_remove "$removal_success" "$branch_deletion_success")
+        json_output=$(json_format_remove "$removed" "$branch_deleted")
         echo "$json_output"
     else
-        if [[ "$removal_success" == "true" ]]; then
+        if [[ "$removed" == "true" ]]; then
             echo "Removed worktree '$target_name'"
-            if [[ "$branch_deletion_success" == "true" ]]; then
+            if [[ "$branch_deleted" == "true" ]]; then
                 echo "Deleted branch '$branch_name'"
-            elif [[ "$delete_branch" == "true" ]]; then
-                echo "Branch '$branch_name' was not deleted (may require manual cleanup)"
             fi
-        else
-            echo "Failed to remove worktree '$target_name'"
         fi
     fi
 
-    if [[ "$removal_success" == "true" ]]; then
-        log_info "Remove operation completed for: $target_name"
-    fi
+    log_info "Remove operation completed for: $target_name"
 }
 
 handle_status_command() {

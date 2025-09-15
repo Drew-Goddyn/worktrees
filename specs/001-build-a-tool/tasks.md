@@ -120,7 +120,7 @@
   - Wire: show current worktree ref
 
 ## Phase 3.4: Integration
-- [ ] T023 Integrate safety checks and merge verification
+- [x] T023 Integrate safety checks and merge verification
   - File: `/Users/drewgoddyn/projects/claude-worktrees/src/services/worktree_service.sh`
   - Implement: tracked changes, unpushed commits/no upstream, op in progress; `git merge-base --is-ancestor` for merged checks
 - [ ] T024 Wire global flags and output modes
