@@ -1,0 +1,17 @@
+# ShellCheck configuration for worktrees CLI
+
+# Enable all optional checks
+enable=all
+
+# Use POSIX sh instead of bash when possible
+shell=bash
+
+# Disable specific warnings that are not relevant
+# SC1091: Not following sourced files (we'll handle includes manually)
+disable=SC1091
+
+# Format: Set output format (gcc-like format)
+format=gcc
+
+# Severity: Include all severity levels
+severity=style

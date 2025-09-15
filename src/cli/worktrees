@@ -1,0 +1,120 @@
+#!/bin/bash
+
+set -euo pipefail
+
+readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+readonly VERSION="0.1.0"
+
+show_help() {
+    cat << EOF
+worktrees - Manage Git feature worktrees
+
+USAGE:
+    worktrees [GLOBAL_OPTIONS] <COMMAND> [COMMAND_OPTIONS]
+
+GLOBAL OPTIONS:
+    --help, -h         Show this help message
+    --version, -v      Show version information
+    --format <format>  Output format (text|json) [default: text]
+
+COMMANDS:
+    create <name>      Create a new worktree
+    list               List existing worktrees
+    switch <name>      Switch to a worktree
+    remove <name>      Remove a worktree
+    status             Show current worktree status
+
+Use 'worktrees <command> --help' for more information on a specific command.
+EOF
+}
+
+show_version() {
+    echo "worktrees $VERSION"
+}
+
+main() {
+    local format="text"
+    local command=""
+
+    # Parse global options
+    while [[ $# -gt 0 ]]; do
+        case $1 in
+            --help|-h)
+                show_help
+                exit 0
+                ;;
+            --version|-v)
+                show_version
+                exit 0
+                ;;
+            --format)
+                if [[ $# -lt 2 ]]; then
+                    echo "Error: --format requires an argument" >&2
+                    exit 2
+                fi
+                format="$2"
+                shift 2
+                ;;
+            create|list|switch|remove|status)
+                command="$1"
+                shift
+                break
+                ;;
+            -*)
+                echo "Error: Unknown option $1" >&2
+                exit 2
+                ;;
+            *)
+                echo "Error: Unknown command $1" >&2
+                echo "Use 'worktrees --help' for usage information." >&2
+                exit 2
+                ;;
+        esac
+    done
+
+    # Validate format
+    case $format in
+        text|json)
+            ;;
+        *)
+            echo "Error: Invalid format '$format'. Must be 'text' or 'json'" >&2
+            exit 2
+            ;;
+    esac
+
+    # Handle commands (scaffolding only - no behaviors implemented)
+    case $command in
+        create)
+            echo "Error: 'create' command not yet implemented" >&2
+            exit 1
+            ;;
+        list)
+            echo "Error: 'list' command not yet implemented" >&2
+            exit 1
+            ;;
+        switch)
+            echo "Error: 'switch' command not yet implemented" >&2
+            exit 1
+            ;;
+        remove)
+            echo "Error: 'remove' command not yet implemented" >&2
+            exit 1
+            ;;
+        status)
+            echo "Error: 'status' command not yet implemented" >&2
+            exit 1
+            ;;
+        "")
+            echo "Error: No command specified" >&2
+            echo "Use 'worktrees --help' for usage information." >&2
+            exit 2
+            ;;
+        *)
+            echo "Error: Unknown command '$command'" >&2
+            echo "Use 'worktrees --help' for usage information." >&2
+            exit 2
+            ;;
+    esac
+}
+
+main "$@"
