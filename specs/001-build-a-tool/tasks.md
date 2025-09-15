@@ -112,7 +112,7 @@
 - [x] T020 Implement `worktrees switch <name>`
   - File: `/Users/drewgoddyn/projects/claude-worktrees/src/cli/worktrees`
   - Wire: allow dirty; warning to stderr; print current/previous
-- [ ] T021 Implement `worktrees remove <name>`
+- [x] T021 Implement `worktrees remove <name>`
   - File: `/Users/drewgoddyn/projects/claude-worktrees/src/cli/worktrees`
   - Wire: safety prechecks; `--delete-branch` with `--merged-into`; `--force` semantics
 - [ ] T022 Implement `worktrees status`
