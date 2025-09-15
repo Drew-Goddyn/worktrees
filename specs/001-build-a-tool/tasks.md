@@ -106,7 +106,7 @@
 - [x] T018 Implement `worktrees list` command
   - File: `/Users/drewgoddyn/projects/claude-worktrees/src/cli/worktrees`
   - Wire: parse paging/filters; call service; print json/text
-- [ ] T019 Implement `worktrees create <NNN-kebab-feature>`
+- [x] T019 Implement `worktrees create <NNN-kebab-feature>`
   - File: `/Users/drewgoddyn/projects/claude-worktrees/src/cli/worktrees`
   - Wire: validate name; base detection/override; reuse/sibling flags; call service
 - [ ] T020 Implement `worktrees switch <name>`
