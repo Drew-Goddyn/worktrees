@@ -115,7 +115,7 @@
 - [x] T021 Implement `worktrees remove <name>`
   - File: `/Users/drewgoddyn/projects/claude-worktrees/src/cli/worktrees`
   - Wire: safety prechecks; `--delete-branch` with `--merged-into`; `--force` semantics
-- [ ] T022 Implement `worktrees status`
+- [x] T022 Implement `worktrees status`
   - File: `/Users/drewgoddyn/projects/claude-worktrees/src/cli/worktrees`
   - Wire: show current worktree ref
 

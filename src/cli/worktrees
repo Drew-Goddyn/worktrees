@@ -557,6 +557,87 @@ handle_remove_command() {
     fi
 }
 
+handle_status_command() {
+    local format="$1"
+    shift
+
+    # Get current worktree path
+    local current_path
+    if ! current_path=$(git rev-parse --show-toplevel 2>/dev/null); then
+        log_error "Not in a Git repository"
+        exit_with_code "precondition"
+    fi
+
+    # Get current branch
+    local current_branch
+    if ! current_branch=$(git branch --show-current 2>/dev/null); then
+        log_error "Could not determine current branch"
+        exit_with_code "precondition"
+    fi
+
+    # Parse worktree list to find current worktree info
+    parse_worktree_list
+
+    local worktree_name=""
+    local worktree_path=""
+
+    # Find the worktree that matches our current path
+    local found_worktree=false
+    for entry in "${WORKTREE_DATA[@]}"; do
+        IFS='|' read -r name path branch head <<< "$entry"
+
+        # Resolve both paths to handle symlinks
+        local resolved_current_path resolved_entry_path
+        resolved_current_path=$(cd "$current_path" && pwd -P 2>/dev/null) || resolved_current_path="$current_path"
+        resolved_entry_path=$(cd "$path" 2>/dev/null && pwd -P 2>/dev/null) || resolved_entry_path="$path"
+
+        if [[ "$resolved_current_path" == "$resolved_entry_path" ]]; then
+            worktree_name="$name"
+            worktree_path="$path"
+            found_worktree=true
+            break
+        fi
+    done
+
+    if [[ "$found_worktree" != "true" ]]; then
+        log_error "Current directory is not a recognized worktree"
+        exit_with_code "not_found"
+    fi
+
+    # Try to determine base reference
+    local base_ref=""
+    if ! base_ref=$(get_default_branch 2>/dev/null); then
+        base_ref="main"  # fallback
+    fi
+
+    # Try to find a more specific base using merge-base
+    local merge_base=""
+    for potential_base in main master "$base_ref"; do
+        if merge_base=$(git merge-base "$current_branch" "$potential_base" 2>/dev/null); then
+            # Check if this base branch actually exists
+            if git show-ref --verify --quiet "refs/heads/$potential_base" 2>/dev/null ||
+               git show-ref --verify --quiet "refs/remotes/origin/$potential_base" 2>/dev/null; then
+                base_ref="$potential_base"
+                break
+            fi
+        fi
+    done
+
+    # Output results
+    if [[ "$format" == "json" ]]; then
+        local json_obj
+        json_obj=$(json_build_object \
+            "name" "$worktree_name" \
+            "baseRef" "$base_ref" \
+            "path" "$worktree_path")
+        echo "$json_obj"
+    else
+        echo "Worktree: $worktree_name"
+        echo "Base: $base_ref"
+        echo "Path: $worktree_path"
+    fi
+}
+
 handle_list_command() {
     local format="$1"
     shift
@@ -840,8 +921,7 @@ main() {
             handle_remove_command "$format" "$@"
             ;;
         status)
-            echo "Error: 'status' command not yet implemented" >&2
-            exit 1
+            handle_status_command "$format" "$@"
             ;;
         "")
             echo "Error: No command specified" >&2

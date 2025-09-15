@@ -183,10 +183,12 @@ teardown() {
 }
 
 # Status command contract tests
-@test "status command exists and fails with unimplemented message" {
+@test "status command exists and works" {
 	run "$WORKTREES_CLI" status
-	[ "$status" -eq 1 ]
-	[[ "$output" =~ "not yet implemented" ]]
+	[ "$status" -eq 0 ]
+	[[ "$output" =~ "Worktree:" ]]
+	[[ "$output" =~ "Base:" ]]
+	[[ "$output" =~ "Path:" ]]
 }
 
 # Error output validation (errors should go to stderr)
