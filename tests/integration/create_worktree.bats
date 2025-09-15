@@ -41,26 +41,18 @@ is_valid_json() {
 	cd "$TEST_REPO"
 	run "$WORKTREES_CLI" create 001-build-a-tool --base main --root "$TEST_WORKTREES_ROOT"
 
-	# Currently expects failure due to unimplemented command
-	[ "$status" -eq 1 ]
-	[[ "$output" =~ "not yet implemented" ]]
-
-	# When implemented, should pass and create worktree directory
-	# [ "$status" -eq 0 ]
-	# [ -d "$TEST_WORKTREES_ROOT/001-build-a-tool" ]
+	# Should pass and create worktree directory
+	[ "$status" -eq 0 ]
+	[ -d "$TEST_WORKTREES_ROOT/001-build-a-tool" ]
 }
 
 @test "create worktree scenario from quickstart.md" {
 	cd "$TEST_REPO"
 	run "$WORKTREES_CLI" create 001-build-a-tool --base main --format json --root "$TEST_WORKTREES_ROOT"
 
-	# Currently expects failure due to unimplemented command
-	[ "$status" -eq 1 ]
-	[[ "$output" =~ "not yet implemented" ]]
-
-	# When implemented, should return valid JSON
-	# [ "$status" -eq 0 ]
-	# is_valid_json "$output"
+	# Should return valid JSON
+	[ "$status" -eq 0 ]
+	is_valid_json "$output"
 }
 
 # Name validation tests
@@ -96,13 +88,9 @@ is_valid_json() {
 	cd "$TEST_REPO"
 	run "$WORKTREES_CLI" create 001-test-feature --base non-existent-branch --root "$TEST_WORKTREES_ROOT"
 
-	# Currently fails on implementation
-	[ "$status" -eq 1 ]
-	[[ "$output" =~ "not yet implemented" ]]
-
-	# When implemented, should fail with precondition error
-	# [ "$status" -eq 3 ]
-	# [[ "$output" =~ "base.*not found\|does not exist" ]]
+	# Should fail with precondition error
+	[ "$status" -eq 3 ]
+	[[ "$output" =~ "base.*not found\|does not exist" ]]
 }
 
 @test "create worktree with valid base branch detection" {
@@ -112,14 +100,10 @@ is_valid_json() {
 	git checkout -b feature-base
 	git checkout main
 
-	run "$WORKTREES_CLI" create 001-test-feature --base feature-base --root "$TEST_WORKTREES_ROOT"
+	run "$WORKTREES_CLI" create 002-feature-base --base feature-base --root "$TEST_WORKTREES_ROOT"
 
-	# Currently fails on implementation
-	[ "$status" -eq 1 ]
-	[[ "$output" =~ "not yet implemented" ]]
-
-	# When implemented, should succeed
-	# [ "$status" -eq 0 ]
+	# Should succeed
+	[ "$status" -eq 0 ]
 }
 
 # Flag handling tests
@@ -142,72 +126,53 @@ is_valid_json() {
 	local custom_root="$TEST_ROOT/custom_worktrees"
 	mkdir -p "$custom_root"
 
-	run "$WORKTREES_CLI" create 001-test-feature --base main --root "$custom_root"
+	run "$WORKTREES_CLI" create 003-custom-root --base main --root "$custom_root"
 
-	# Currently fails on implementation
-	[ "$status" -eq 1 ]
-	[[ "$output" =~ "not yet implemented" ]]
-
-	# When implemented, should use custom root
-	# [ "$status" -eq 0 ]
-	# [ -d "$custom_root/001-test-feature" ]
+	# Should use custom root
+	[ "$status" -eq 0 ]
+	[ -d "$custom_root/003-custom-root" ]
 }
 
 # Duplicate worktree tests
 @test "create duplicate worktree should fail" {
 	cd "$TEST_REPO"
 
-	# This test will be meaningful once create is implemented
-	run "$WORKTREES_CLI" create 001-test-feature --base main --root "$TEST_WORKTREES_ROOT"
-
-	# Currently fails on implementation
-	[ "$status" -eq 1 ]
-	[[ "$output" =~ "not yet implemented" ]]
-
-	# When implemented:
 	# First creation should succeed
-	# [ "$status" -eq 0 ]
+	run "$WORKTREES_CLI" create 004-duplicate --base main --root "$TEST_WORKTREES_ROOT"
+	[ "$status" -eq 0 ]
 
 	# Second creation should fail with conflict error
-	# run "$WORKTREES_CLI" create 001-test-feature --base main --root "$TEST_WORKTREES_ROOT"
-	# [ "$status" -eq 4 ]
-	# [[ "$output" =~ "already exists\|conflict" ]]
+	run "$WORKTREES_CLI" create 004-duplicate --base main --root "$TEST_WORKTREES_ROOT"
+	[ "$status" -eq 4 ]
+	[[ "$output" =~ "already exists\|conflict" ]]
 }
 
 # JSON output validation tests
 @test "create worktree JSON output has required fields" {
 	cd "$TEST_REPO"
-	run "$WORKTREES_CLI" create 001-test-feature --base main --format json --root "$TEST_WORKTREES_ROOT"
+	run "$WORKTREES_CLI" create 005-json-test --base main --format json --root "$TEST_WORKTREES_ROOT"
 
-	# Currently fails on implementation
-	[ "$status" -eq 1 ]
-	[[ "$output" =~ "not yet implemented" ]]
+	# Validate JSON schema
+	[ "$status" -eq 0 ]
+	is_valid_json "$output"
 
-	# When implemented, validate JSON schema
-	# [ "$status" -eq 0 ]
-	# is_valid_json "$output"
-	#
 	# Required fields per OpenAPI spec: {name, branch, baseRef, path, active}
-	# local json="$output"
-	# [[ "$json" =~ '"name"' ]]
-	# [[ "$json" =~ '"branch"' ]]
-	# [[ "$json" =~ '"baseRef"' ]]
-	# [[ "$json" =~ '"path"' ]]
-	# [[ "$json" =~ '"active"' ]]
+	local json="$output"
+	[[ "$json" =~ '"name"' ]]
+	[[ "$json" =~ '"branch"' ]]
+	[[ "$json" =~ '"baseRef"' ]]
+	[[ "$json" =~ '"path"' ]]
+	[[ "$json" =~ '"active"' ]]
 }
 
 # Error handling and edge cases
 @test "create worktree outside git repository should fail" {
 	cd "$TEST_ROOT"  # Not in git repo
-	run "$WORKTREES_CLI" create 001-test-feature --base main --root "$TEST_WORKTREES_ROOT"
+	run "$WORKTREES_CLI" create 006-no-git --base main --root "$TEST_WORKTREES_ROOT"
 
-	# Currently fails on implementation
-	[ "$status" -eq 1 ]
-	[[ "$output" =~ "not yet implemented" ]]
-
-	# When implemented, should fail with appropriate error
-	# [ "$status" -eq 3 ]
-	# [[ "$output" =~ "not.*git.*repository\|not in.*git" ]]
+	# Should fail with appropriate error
+	[ "$status" -eq 3 ]
+	[[ "$output" =~ "not.*git.*repository\|not in.*git" ]]
 }
 
 @test "create worktree without required name argument" {

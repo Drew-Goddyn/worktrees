@@ -53,25 +53,17 @@ get_json_field() {
 	cd "$TEST_REPO"
 	run "$WORKTREES_CLI" list
 
-	# Currently expects failure due to unimplemented command
-	[ "$status" -eq 1 ]
-	[[ "$output" =~ "not yet implemented" ]]
-
-	# When implemented, should show default text output
-	# [ "$status" -eq 0 ]
+	# Should show default text output
+	[ "$status" -eq 0 ]
 }
 
 @test "list worktrees scenario from quickstart.md" {
 	cd "$TEST_REPO"
 	run "$WORKTREES_CLI" list --page 1 --page-size 20 --format json
 
-	# Currently expects failure due to unimplemented command
-	[ "$status" -eq 1 ]
-	[[ "$output" =~ "not yet implemented" ]]
-
-	# When implemented, should return valid JSON with pagination
-	# [ "$status" -eq 0 ]
-	# is_valid_json "$output"
+	# Should return valid JSON with pagination
+	[ "$status" -eq 0 ]
+	is_valid_json "$output"
 }
 
 @test "list empty worktrees shows appropriate message" {
