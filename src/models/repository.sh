@@ -110,6 +110,49 @@ get_remotes() {
 }
 
 #######################################
+# Resolve worktrees root directory with fallback chain
+# Globals:
+#   HOME - User home directory
+#   WORKTREES_ROOT - Optional environment override
+# Arguments:
+#   $1 - Optional root path override (from --root flag)
+# Outputs:
+#   Absolute path to worktrees root directory
+# Returns:
+#   0 on success, 1 on error (cannot create directory)
+#######################################
+resolve_worktrees_root() {
+    local root_path_override="${1:-}"
+    local resolved_root
+
+    # Priority order: --root flag > WORKTREES_ROOT env > $HOME/.worktrees default
+    if [[ -n "$root_path_override" ]]; then
+        resolved_root="$root_path_override"
+    elif [[ -n "${WORKTREES_ROOT:-}" ]]; then
+        resolved_root="$WORKTREES_ROOT"
+    else
+        resolved_root="${HOME}/.worktrees"
+    fi
+
+    # Convert to absolute path if needed
+    if [[ "$resolved_root" != /* ]]; then
+        resolved_root="$(pwd)/$resolved_root"
+    fi
+
+    # Create directory if it doesn't exist
+    if [[ ! -d "$resolved_root" ]]; then
+        if ! mkdir -p "$resolved_root" 2>/dev/null; then
+            echo "Error: Failed to create worktrees root directory: $resolved_root" >&2
+            return 1
+        fi
+        echo "Info: Created worktrees root directory: $resolved_root" >&2
+    fi
+
+    echo "$resolved_root"
+    return 0
+}
+
+#######################################
 # Get repository metadata as JSON
 # Combines all repository functions into structured output
 # Globals:
@@ -165,12 +208,16 @@ if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
         "info")
             get_repository_info
             ;;
+        "worktrees-root")
+            resolve_worktrees_root "${2:-}"
+            ;;
         *)
-            echo "Usage: $0 {root|branch|remotes|info}" >&2
-            echo "  root    - Get repository root path" >&2
-            echo "  branch  - Get default branch name" >&2
-            echo "  remotes - Get remotes as name,url pairs" >&2
-            echo "  info    - Get all repository information" >&2
+            echo "Usage: $0 {root|branch|remotes|info|worktrees-root}" >&2
+            echo "  root          - Get repository root path" >&2
+            echo "  branch        - Get default branch name" >&2
+            echo "  remotes       - Get remotes as name,url pairs" >&2
+            echo "  info          - Get all repository information" >&2
+            echo "  worktrees-root [path] - Resolve worktrees root directory" >&2
             exit 1
             ;;
     esac

@@ -77,6 +77,7 @@ OPTIONS:
     --filter-base <branch>     Filter by base branch
     --page <number>            Page number for pagination [default: 1]
     --page-size <size>         Items per page [default: 10, max: 50]
+    --root <path>              Root directory for worktrees [default: ~/.worktrees]
     --format <format>          Output format (text|json) [default: text]
     --help, -h                 Show this help message
 
@@ -99,6 +100,7 @@ ARGUMENTS:
     <name>                 Name of the worktree to switch to
 
 OPTIONS:
+    --root <path>          Root directory for worktrees [default: ~/.worktrees]
     --format <format>      Output format (text|json) [default: text]
     --help, -h             Show this help message
 
@@ -122,6 +124,7 @@ OPTIONS:
     --delete-branch            Delete the associated branch after removal
     --merged-into <branch>     Verify branch is merged into this branch before deletion
     --force                    Force removal even with untracked files
+    --root <path>              Root directory for worktrees [default: ~/.worktrees]
     --format <format>          Output format (text|json) [default: text]
     --help, -h                 Show this help message
 
@@ -145,6 +148,7 @@ USAGE:
     worktrees status [OPTIONS]
 
 OPTIONS:
+    --root <path>          Root directory for worktrees [default: ~/.worktrees]
     --format <format>      Output format (text|json) [default: text]
     --help, -h             Show this help message
 
@@ -184,7 +188,7 @@ handle_create_command() {
 
     # Default values
     local base_ref=""
-    local root_path="${HOME}/.worktrees"
+    local root_path=""
     local reuse_branch=false
     local sibling=""
 
@@ -252,13 +256,10 @@ handle_create_command() {
         log_info "Using detected base branch: $base_ref"
     fi
 
-    # Create root directory if it doesn't exist
-    if [[ ! -d "$root_path" ]]; then
-        if ! mkdir -p "$root_path"; then
-            log_error "Failed to create worktree root directory: $root_path"
-            exit_with_code "precondition"
-        fi
-        log_info "Created worktree root directory: $root_path"
+    # Resolve worktree root directory (creates if missing)
+    if ! root_path=$(resolve_worktrees_root "$root_path"); then
+        log_error "Failed to resolve worktree root directory"
+        exit_with_code "precondition"
     fi
 
     # Check if branch already exists and handle accordingly
@@ -367,9 +368,20 @@ handle_switch_command() {
     local target_name="$1"
     shift
 
-    # Parse switch-specific arguments (none currently defined)
+    # Default values
+    local root_path=""
+
+    # Parse switch-specific arguments
     while [[ $# -gt 0 ]]; do
         case $1 in
+            --root)
+                if [[ $# -lt 2 ]]; then
+                    log_error "--root requires an argument"
+                    exit_with_code "validation"
+                fi
+                root_path="$2"
+                shift 2
+                ;;
             *)
                 log_error "Unknown option for switch command: $1"
                 exit_with_code "validation"
@@ -522,6 +534,7 @@ handle_remove_command() {
     local delete_branch=false
     local merged_into=""
     local force=false
+    local root_path=""
 
     # Parse remove-specific arguments
     while [[ $# -gt 0 ]]; do
@@ -541,6 +554,14 @@ handle_remove_command() {
             --force)
                 force=true
                 shift
+                ;;
+            --root)
+                if [[ $# -lt 2 ]]; then
+                    log_error "--root requires an argument"
+                    exit_with_code "validation"
+                fi
+                root_path="$2"
+                shift 2
                 ;;
             *)
                 log_error "Unknown option for remove command: $1"
@@ -638,6 +659,27 @@ handle_status_command() {
         fi
     done
 
+    # Default values
+    local root_path=""
+
+    # Parse status-specific arguments
+    while [[ $# -gt 0 ]]; do
+        case $1 in
+            --root)
+                if [[ $# -lt 2 ]]; then
+                    log_error "--root requires an argument"
+                    exit_with_code "validation"
+                fi
+                root_path="$2"
+                shift 2
+                ;;
+            *)
+                log_error "Unknown option for status command: $1"
+                exit_with_code "validation"
+                ;;
+        esac
+    done
+
     # Get current worktree path
     local current_path
     if ! current_path=$(git rev-parse --show-toplevel 2>/dev/null); then
@@ -732,6 +774,7 @@ handle_list_command() {
     local filter_base=""
     local page="1"
     local page_size="20"
+    local root_path=""
 
     # Parse list-specific arguments
     while [[ $# -gt 0 ]]; do
@@ -766,6 +809,14 @@ handle_list_command() {
                     exit_with_code "validation"
                 fi
                 page_size="$2"
+                shift 2
+                ;;
+            --root)
+                if [[ $# -lt 2 ]]; then
+                    log_error "--root requires an argument"
+                    exit_with_code "validation"
+                fi
+                root_path="$2"
                 shift 2
                 ;;
             *)

@@ -126,7 +126,7 @@
 - [x] T024 Wire global flags and output modes
   - Files: `/Users/drewgoddyn/projects/claude-worktrees/src/cli/worktrees`, `/Users/drewgoddyn/projects/claude-worktrees/src/lib/io.sh`, `/Users/drewgoddyn/projects/claude-worktrees/src/lib/json.sh`
   - Implement: `--help`, `--version`, `--format text|json` consistent across commands
-- [ ] T025 Implement global root resolution and setup
+- [x] T025 Implement global root resolution and setup
   - Files: `/Users/drewgoddyn/projects/claude-worktrees/src/services/worktree_service.sh`, `/Users/drewgoddyn/projects/claude-worktrees/src/models/repository.sh`
   - Implement: default `$HOME/.worktrees`, `WORKTREES_ROOT` and `--root` override; create if missing
 
