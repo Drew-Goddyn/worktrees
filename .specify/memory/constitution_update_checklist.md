@@ -11,6 +11,9 @@ When amending the constitution (`/memory/constitution.md`), ensure all dependent
 - [ ] `/.claude/commands/plan.md` - Update if planning process changes
 - [ ] `/.claude/commands/tasks.md` - Update if task generation affected
 - [ ] `/CLAUDE.md` - Update runtime development guidelines
+- [ ] `/.cursor/commands/plan.md` - Update if planning process changes
+- [ ] `/.cursor/commands/tasks.md` - Update if task generation affected
+- [ ] `/.cursor/rules` - Update runtime development guidelines
 
 ### Article-specific updates:
 
