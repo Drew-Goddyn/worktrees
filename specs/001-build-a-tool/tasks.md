@@ -137,7 +137,7 @@
   - File: `/Users/drewgoddyn/projects/claude-worktrees/tests/unit/repository_test.bats`
 - [x] T028 [P] Implement list paging caps and performance guards
   - Files: `/Users/drewgoddyn/projects/claude-worktrees/src/cli/worktrees`, `/Users/drewgoddyn/projects/claude-worktrees/src/services/worktree_service.sh`
-- [ ] T029 [P] Documentation pass
+- [x] T029 [P] Documentation pass
   - Update quickstart examples in `/Users/drewgoddyn/projects/claude-worktrees/specs/001-build-a-tool/quickstart.md` and create README at `/Users/drewgoddyn/projects/claude-worktrees/README.md`
 - [ ] T030 [P] Ensure ShellCheck/shfmt clean, finalize Makefile targets
   - Run `scripts/lint.sh` and `scripts/format.sh`; adjust code accordingly
