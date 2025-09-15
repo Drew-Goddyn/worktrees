@@ -123,7 +123,7 @@
 - [x] T023 Integrate safety checks and merge verification
   - File: `/Users/drewgoddyn/projects/claude-worktrees/src/services/worktree_service.sh`
   - Implement: tracked changes, unpushed commits/no upstream, op in progress; `git merge-base --is-ancestor` for merged checks
-- [ ] T024 Wire global flags and output modes
+- [x] T024 Wire global flags and output modes
   - Files: `/Users/drewgoddyn/projects/claude-worktrees/src/cli/worktrees`, `/Users/drewgoddyn/projects/claude-worktrees/src/lib/io.sh`, `/Users/drewgoddyn/projects/claude-worktrees/src/lib/json.sh`
   - Implement: `--help`, `--version`, `--format text|json` consistent across commands
 - [ ] T025 Implement global root resolution and setup
