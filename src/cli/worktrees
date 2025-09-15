@@ -5,6 +5,12 @@ set -euo pipefail
 readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 readonly VERSION="0.1.0"
 
+# Source dependencies
+source "$SCRIPT_DIR/../lib/io.sh"
+source "$SCRIPT_DIR/../lib/json.sh"
+source "$SCRIPT_DIR/../models/list_query.sh"
+source "$SCRIPT_DIR/../models/worktree.sh"
+
 show_help() {
     cat << EOF
 worktrees - Manage Git feature worktrees
@@ -30,6 +36,224 @@ EOF
 
 show_version() {
     echo "worktrees $VERSION"
+}
+
+handle_list_command() {
+    local format="$1"
+    shift
+
+    # Default values
+    local filter_name=""
+    local filter_base=""
+    local page="1"
+    local page_size="20"
+
+    # Parse list-specific arguments
+    while [[ $# -gt 0 ]]; do
+        case $1 in
+            --filter-name)
+                if [[ $# -lt 2 ]]; then
+                    log_error "Error: --filter-name requires an argument"
+                    exit_with_code "validation"
+                fi
+                filter_name="$2"
+                shift 2
+                ;;
+            --filter-base)
+                if [[ $# -lt 2 ]]; then
+                    log_error "Error: --filter-base requires an argument"
+                    exit_with_code "validation"
+                fi
+                filter_base="$2"
+                shift 2
+                ;;
+            --page)
+                if [[ $# -lt 2 ]]; then
+                    log_error "Error: --page requires an argument"
+                    exit_with_code "validation"
+                fi
+                page="$2"
+                shift 2
+                ;;
+            --page-size)
+                if [[ $# -lt 2 ]]; then
+                    log_error "Error: --page-size requires an argument"
+                    exit_with_code "validation"
+                fi
+                page_size="$2"
+                shift 2
+                ;;
+            *)
+                log_error "Error: Unknown option for list command: $1"
+                exit_with_code "validation"
+                ;;
+        esac
+    done
+
+    # Check if we're in a git repository
+    if ! git rev-parse --git-dir >/dev/null 2>&1; then
+        log_error "Not in a Git repository"
+        exit_with_code "precondition"
+    fi
+
+    # Validate and build query parameters
+    local query_params
+    if ! query_params=$(build_list_query "$filter_name" "$filter_base" "$page" "$page_size" 2>&1); then
+        log_error "Invalid parameters: $query_params"
+        exit_with_code "validation"
+    fi
+
+    # Parse query parameters back
+    IFS='|' read -r filter_name filter_base page page_size <<< "$query_params"
+
+    # Parse worktrees from git
+    parse_worktree_list
+
+    # Get all worktree names
+    local all_names=()
+    while IFS= read -r name; do
+        all_names+=("$name")
+    done < <(list_worktree_names)
+
+    # Apply filters
+    local filtered_names=()
+    for name in "${all_names[@]}"; do
+        local branch
+        branch=$(get_worktree_field "$name" "branch") || continue
+
+        if filter_matches "$filter_name" "$filter_base" "$name" "$branch"; then
+            filtered_names+=("$name")
+        fi
+    done
+
+    # Apply pagination
+    local total=${#filtered_names[@]}
+    local start_index=$(( (page - 1) * page_size ))
+    local end_index=$(( start_index + page_size ))
+
+    if [[ $start_index -ge $total ]]; then
+        start_index=$total
+        end_index=$total
+    elif [[ $end_index -gt $total ]]; then
+        end_index=$total
+    fi
+
+    local page_names=()
+    if [[ ${#filtered_names[@]} -gt 0 && $start_index -lt ${#filtered_names[@]} ]]; then
+        page_names=("${filtered_names[@]:$start_index:$((end_index - start_index))}")
+    fi
+
+    # Format output
+    if [[ "$format" == "json" ]]; then
+        if [[ ${#page_names[@]} -eq 0 ]]; then
+            format_json_output "$total" "$page" "$page_size"
+        else
+            format_json_output "$total" "$page" "$page_size" "${page_names[@]}"
+        fi
+    else
+        if [[ ${#page_names[@]} -eq 0 ]]; then
+            format_text_output
+        else
+            format_text_output "${page_names[@]}"
+        fi
+    fi
+
+    # Add pagination info for JSON
+    if [[ "$format" == "json" ]]; then
+        # This is handled in format_json_output
+        :
+    else
+        # Show pagination info for text format
+        if [[ $total -gt 0 && ($page > 1 || $end_index < $total) ]]; then
+            local start_item=$((start_index + 1))
+            log_info "Showing $start_item-$end_index of $total worktrees (page $page of $(( (total + page_size - 1) / page_size )))"
+        fi
+    fi
+}
+
+format_json_output() {
+    local total="$1"
+    local page="$2"
+    local page_size="$3"
+    shift 3
+    local names=()
+    if [[ $# -gt 0 ]]; then
+        names=("$@")
+    fi
+
+    local items_array="["
+    local first=true
+
+    for name in "${names[@]+"${names[@]}"}"; do
+        if [[ "$first" == "true" ]]; then
+            first=false
+        else
+            items_array+=","
+        fi
+
+        local branch path is_active is_dirty has_unpushed base_ref
+        branch=$(get_worktree_field "$name" "branch")
+        path=$(get_worktree_field "$name" "path")
+        is_active=$(get_worktree_field "$name" "isActive")
+        is_dirty=$(get_worktree_field "$name" "isDirty")
+        has_unpushed=$(get_worktree_field "$name" "hasUnpushedCommits")
+
+        # For baseRef, we'll use the branch for now (this could be enhanced later)
+        base_ref="$branch"
+
+        local worktree_obj
+        worktree_obj=$(json_format_worktree "$name" "$branch" "$base_ref" "$path" "$is_active" "$is_dirty" "$has_unpushed")
+        items_array+="$worktree_obj"
+    done
+
+    items_array+="]"
+
+    local pagination_obj
+    pagination_obj=$(json_format_pagination "$items_array" "$page" "$page_size" "$total")
+
+    echo "$pagination_obj"
+}
+
+format_text_output() {
+    local names=()
+    if [[ $# -gt 0 ]]; then
+        names=("$@")
+    fi
+
+    if [[ ${#names[@]} -eq 0 ]]; then
+        echo "No worktrees found"
+        return
+    fi
+
+    # Print header
+    printf "%-20s %-20s %-15s %-50s\n" "NAME" "BRANCH" "STATUS" "PATH"
+    printf "%-20s %-20s %-15s %-50s\n" "----" "------" "------" "----"
+
+    # Print worktree information
+    for name in "${names[@]+"${names[@]}"}"; do
+        local branch path is_active is_dirty has_unpushed
+        branch=$(get_worktree_field "$name" "branch")
+        path=$(get_worktree_field "$name" "path")
+        is_active=$(get_worktree_field "$name" "isActive")
+        is_dirty=$(get_worktree_field "$name" "isDirty")
+        has_unpushed=$(get_worktree_field "$name" "hasUnpushedCommits")
+
+        local status=""
+        if [[ "$is_active" == "true" ]]; then
+            status+="active"
+        fi
+        if [[ "$is_dirty" == "true" ]]; then
+            [[ -n "$status" ]] && status+=","
+            status+="dirty"
+        fi
+        if [[ "$has_unpushed" == "true" ]]; then
+            [[ -n "$status" ]] && status+=","
+            status+="unpushed"
+        fi
+        [[ -z "$status" ]] && status="clean"
+
+        printf "%-20s %-20s %-15s %-50s\n" "$name" "$branch" "$status" "$path"
+    done
 }
 
 main() {
@@ -89,8 +313,7 @@ main() {
             exit 1
             ;;
         list)
-            echo "Error: 'list' command not yet implemented" >&2
-            exit 1
+            handle_list_command "$format" "$@"
             ;;
         switch)
             echo "Error: 'switch' command not yet implemented" >&2

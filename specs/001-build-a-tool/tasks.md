@@ -103,7 +103,7 @@
   - Implement: stderr logging helpers, consistent exit codes (0/2/3/4/5/6)
 
 ### CLI commands (endpoints; sequential due to shared files)
-- [ ] T018 Implement `worktrees list` command
+- [x] T018 Implement `worktrees list` command
   - File: `/Users/drewgoddyn/projects/claude-worktrees/src/cli/worktrees`
   - Wire: parse paging/filters; call service; print json/text
 - [ ] T019 Implement `worktrees create <NNN-kebab-feature>`
