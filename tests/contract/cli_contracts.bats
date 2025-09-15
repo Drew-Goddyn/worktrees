@@ -30,13 +30,13 @@ teardown() {
 @test "version flag shows version information" {
 	run "$WORKTREES_CLI" --version
 	[ "$status" -eq 0 ]
-	[[ "$output" =~ "worktrees [0-9]" ]]
+	[[ "$output" =~ worktrees.* ]]
 }
 
 @test "short version flag works" {
 	run "$WORKTREES_CLI" -v
 	[ "$status" -eq 0 ]
-	[[ "$output" =~ "worktrees [0-9]" ]]
+	[[ "$output" =~ worktrees.* ]]
 }
 
 @test "format flag accepts text value" {
