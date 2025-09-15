@@ -66,9 +66,11 @@ get_default_branch() {
     fi
 
     # If no remotes exist, try to find any local branch
-    if ! git remote >/dev/null 2>&1; then
+    local remotes_count
+    remotes_count=$(git remote | wc -l 2>/dev/null || echo "0")
+    if [[ "$remotes_count" -eq 0 ]]; then
         local first_branch
-        if first_branch=$(git branch --format='%(refname:short)' | head -n1 2>/dev/null); then
+        if first_branch=$(git branch --format='%(refname:short)' | head -n1 2>/dev/null) && [[ -n "$first_branch" ]]; then
             echo "${first_branch}"
             return 0
         fi
@@ -100,11 +102,13 @@ get_remotes() {
 
     # Filter to fetch URLs only and format as name,url
     # Remote output format: "name\turl (fetch)" and "name\turl (push)"
-    echo "${remotes_output}" | grep '(fetch)$' | while IFS=$'\t' read -r name url_and_type; do
-        # Remove the " (fetch)" suffix
-        local url="${url_and_type% (fetch)}"
-        echo "${name},${url}"
-    done
+    if [[ -n "${remotes_output}" ]]; then
+        echo "${remotes_output}" | grep '(fetch)$' | while IFS=$'\t' read -r name url_and_type; do
+            # Remove the " (fetch)" suffix
+            local url="${url_and_type% (fetch)}"
+            echo "${name},${url}"
+        done
+    fi
 
     return 0
 }

@@ -133,7 +133,7 @@
 ## Phase 3.5: Polish
 - [x] T026 [P] Unit tests: FeatureName validation rules
   - File: `/Users/drewgoddyn/projects/claude-worktrees/tests/unit/feature_name_test.bats`
-- [ ] T027 [P] Unit tests: default base detection
+- [x] T027 [P] Unit tests: default base detection
   - File: `/Users/drewgoddyn/projects/claude-worktrees/tests/unit/repository_test.bats`
 - [ ] T028 [P] Implement list paging caps and performance guards
   - Files: `/Users/drewgoddyn/projects/claude-worktrees/src/cli/worktrees`, `/Users/drewgoddyn/projects/claude-worktrees/src/services/worktree_service.sh`
