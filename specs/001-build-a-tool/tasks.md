@@ -42,63 +42,63 @@
 - Absolute repo root: `/Users/drewgoddyn/projects/claude-worktrees`
 
 ## Phase 3.1: Setup
-- [ ] T001 Create project structure per implementation plan
+- [x] T001 Create project structure per implementation plan
   - Paths: `/Users/drewgoddyn/projects/claude-worktrees/src/{cli,models,services,lib}` and `/Users/drewgoddyn/projects/claude-worktrees/tests/{contract,integration,unit}`, `/Users/drewgoddyn/projects/claude-worktrees/scripts`
-- [ ] T002 Initialize Bash CLI scaffold and tooling
+- [x] T002 Initialize Bash CLI scaffold and tooling
   - Create entrypoint: `/Users/drewgoddyn/projects/claude-worktrees/src/cli/worktrees` with `--help|--version|--format` scaffolding only (no behaviors)
   - Create Makefile with targets: `test`, `lint`, `fmt`
   - Add runner scripts: `/Users/drewgoddyn/projects/claude-worktrees/scripts/test.sh`, `/Users/drewgoddyn/projects/claude-worktrees/scripts/lint.sh`, `/Users/drewgoddyn/projects/claude-worktrees/scripts/format.sh`
-- [ ] T003 [P] Configure linting and formatting
+- [x] T003 [P] Configure linting and formatting
   - ShellCheck config at `/Users/drewgoddyn/projects/claude-worktrees/.shellcheckrc`
   - shfmt usage in `scripts/format.sh`
 
 ## Phase 3.2: Tests First (TDD) ⚠️ MUST COMPLETE BEFORE 3.3
 **CRITICAL: These tests MUST be written and MUST FAIL before ANY implementation**
-- [ ] T004 [P] Contract tests from `cli-contracts.md`
+- [x] T004 [P] Contract tests from `cli-contracts.md`
   - File: `/Users/drewgoddyn/projects/claude-worktrees/tests/contract/cli_contracts.bats`
   - Scope: Validate command shapes and flags for `worktrees create|list|switch|remove|status`, exit codes, stderr vs stdout
-- [ ] T005 [P] Contract tests from `openapi.yaml`
+- [x] T005 [P] Contract tests from `openapi.yaml`
   - File: `/Users/drewgoddyn/projects/claude-worktrees/tests/contract/openapi_worktrees.bats`
   - Scope: Validate `--format json` output schema for list/create/switch/remove/status against OpenAPI fields
-- [ ] T006 [P] Integration test: create a worktree
+- [x] T006 [P] Integration test: create a worktree
   - File: `/Users/drewgoddyn/projects/claude-worktrees/tests/integration/create_worktree.bats`
   - Scenario from quickstart.md "Create a worktree"
-- [ ] T007 [P] Integration test: list worktrees (paged)
+- [x] T007 [P] Integration test: list worktrees (paged)
   - File: `/Users/drewgoddyn/projects/claude-worktrees/tests/integration/list_worktrees.bats`
   - Scenario from quickstart.md "List worktrees (paged)"
-- [ ] T008 [P] Integration test: switch to a worktree
+- [x] T008 [P] Integration test: switch to a worktree
   - File: `/Users/drewgoddyn/projects/claude-worktrees/tests/integration/switch_worktree.bats`
   - Scenario from quickstart.md "Switch to a worktree"
-- [ ] T009 [P] Integration test: remove worktree (keep branch)
+- [x] T009 [P] Integration test: remove worktree (keep branch)
   - File: `/Users/drewgoddyn/projects/claude-worktrees/tests/integration/remove_keep_branch.bats`
   - Scenario from quickstart.md "Remove a worktree safely (keep branch)"
-- [ ] T010 [P] Integration test: remove worktree and delete branch when merged
+- [x] T010 [P] Integration test: remove worktree and delete branch when merged
   - File: `/Users/drewgoddyn/projects/claude-worktrees/tests/integration/remove_delete_branch.bats`
   - Scenario from quickstart.md "Remove and delete branch when fully merged"
 
 ## Phase 3.3: Core Implementation (ONLY after tests are failing)
 ### Models (from data-model.md)
-- [ ] T011 [P] Repository model functions
+- [x] T011 [P] Repository model functions
   - File: `/Users/drewgoddyn/projects/claude-worktrees/src/models/repository.sh`
   - Implement: detect repo root; resolve default base from remote HEAD→main→master
-- [ ] T012 [P] FeatureName model and validation
+- [x] T012 [P] FeatureName model and validation
   - File: `/Users/drewgoddyn/projects/claude-worktrees/src/models/feature_name.sh`
   - Implement: regex `^[0-9]{3}-[a-z0-9-]{1,40}$`, reserved names, normalization
-- [ ] T013 [P] Worktree model
+- [x] T013 [P] Worktree model
   - File: `/Users/drewgoddyn/projects/claude-worktrees/src/models/worktree.sh`
   - Implement: representation; parse `git worktree list --porcelain` into fields; derived `active`
-- [ ] T014 [P] ListQuery model
+- [x] T014 [P] ListQuery model
   - File: `/Users/drewgoddyn/projects/claude-worktrees/src/models/list_query.sh`
   - Implement: filterName, filterBase, page, pageSize with validation and caps
 
 ### Services and libs
-- [ ] T015 [P] Worktree service stubs
+- [x] T015 [P] Worktree service stubs
   - File: `/Users/drewgoddyn/projects/claude-worktrees/src/services/worktree_service.sh`
   - Implement: `create_worktree`, `list_worktrees`, `switch_worktree`, `remove_worktree` interfaces (no CLI wiring yet)
-- [ ] T016 [P] JSON utilities for structured output
+- [x] T016 [P] JSON utilities for structured output
   - File: `/Users/drewgoddyn/projects/claude-worktrees/src/lib/json.sh`
   - Implement: safe JSON quoting/encoding for text|json outputs (no jq dependency)
-- [ ] T017 [P] IO utilities and exit code mapping
+- [x] T017 [P] IO utilities and exit code mapping
   - File: `/Users/drewgoddyn/projects/claude-worktrees/src/lib/io.sh`
   - Implement: stderr logging helpers, consistent exit codes (0/2/3/4/5/6)
 
