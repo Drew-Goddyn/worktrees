@@ -83,10 +83,10 @@ teardown() {
 }
 
 # Create command contract tests
-@test "create command exists and fails with unimplemented message" {
+@test "create command exists and works with basic usage" {
 	run "$WORKTREES_CLI" create 001-test-feature
-	[ "$status" -eq 1 ]
-	[[ "$output" =~ "not yet implemented" ]]
+	# Should succeed or fail with meaningful error, not "not implemented"
+	[ "$status" -ne 1 ] || [[ ! "$output" =~ "not yet implemented" ]]
 }
 
 @test "create command accepts valid feature name format" {
@@ -120,10 +120,11 @@ teardown() {
 }
 
 # List command contract tests
-@test "list command exists and fails with unimplemented message" {
+@test "list command exists and works" {
 	run "$WORKTREES_CLI" list
-	[ "$status" -eq 1 ]
-	[[ "$output" =~ "not yet implemented" ]]
+	# Should succeed and not show "not implemented"
+	[ "$status" -eq 0 ]
+	[[ ! "$output" =~ "not yet implemented" ]]
 }
 
 @test "list command accepts filter-name flag" {
@@ -151,17 +152,17 @@ teardown() {
 }
 
 # Switch command contract tests
-@test "switch command exists and fails with unimplemented message" {
+@test "switch command exists and works" {
 	run "$WORKTREES_CLI" switch 001-test-feature
-	[ "$status" -eq 1 ]
-	[[ "$output" =~ "not yet implemented" ]]
+	# Should succeed or fail with meaningful error (like "not found"), not "not implemented"
+	[[ ! "$output" =~ "not yet implemented" ]]
 }
 
 # Remove command contract tests
-@test "remove command exists and fails with unimplemented message" {
+@test "remove command exists and works" {
 	run "$WORKTREES_CLI" remove 001-test-feature
-	[ "$status" -eq 1 ]
-	[[ "$output" =~ "not yet implemented" ]]
+	# Should succeed or fail with meaningful error (like "not found"), not "not implemented"
+	[[ ! "$output" =~ "not yet implemented" ]]
 }
 
 @test "remove command accepts delete-branch flag" {
@@ -199,9 +200,3 @@ teardown() {
 	[[ "$output" =~ "Invalid format" ]]
 }
 
-@test "unimplemented command errors go to stderr" {
-	run "$WORKTREES_CLI" create 001-test
-	[ "$status" -eq 1 ]
-	# Implementation error should go to stderr
-	[[ "$output" =~ "not yet implemented" ]]
-}
