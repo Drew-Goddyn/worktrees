@@ -21,18 +21,20 @@ Given the context provided as an argument, do this:
    - Use `.specify/templates/tasks-template.md` as the base
    - Replace example tasks with actual tasks based on:
      * **Setup tasks**: Project init, dependencies, linting
-     * **Test tasks [P]**: One per contract, one per integration scenario
-     * **Core tasks**: One per entity, service, CLI command, endpoint
-     * **Integration tasks**: DB connections, middleware, logging
+     * **Ruby CLI Setup**: Gemfile, RSpec config, dry-cli setup (if Ruby detected)
+     * **Test tasks [P]**: Aruba feature tests, RSpec unit tests (Ruby), contract tests
+     * **Core tasks**: CLI commands, business logic modules (NO service layers per Constitution)
+     * **Integration tasks**: Real git operations, error handling, logging
      * **Polish tasks [P]**: Unit tests, performance, docs
 
 4. Task generation rules:
    - Each contract file → contract test task marked [P]
    - Each entity in data-model → model creation task marked [P]
-   - Each endpoint → implementation task (not parallel if shared files)
-   - Each user story → integration test marked [P]
+   - Each CLI command → dry-cli command class task marked [P] (Ruby)
+   - Each user story → Aruba integration test marked [P] (Ruby)
    - Different files = can be parallel [P]
    - Same file = sequential (no [P])
+   - **CRITICAL**: Tests MUST be created before implementation (TDD per Constitution)
 
 5. Order tasks by dependencies:
    - Setup before everything

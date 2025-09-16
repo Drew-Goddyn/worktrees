@@ -1,0 +1,56 @@
+# Cursor IDE Development Guidelines - Worktrees Project
+
+This project follows constitutional principles defined in `.specify/memory/constitution.md` for Ruby CLI development.
+
+## Technology Choices (Per Constitution v1.0.0)
+- Ruby 3.2+ with dry-cli framework for CLI tools
+- RSpec + Aruba for testing (no mocks - use real git repositories)
+- lib/ + exe/ structure (no service layers)
+- Maximum 2 architectural layers: commands + business logic
+
+## File Structure
+```
+lib/worktrees/           # Business logic modules
+├── cli.rb              # Main CLI application
+├── commands/           # Command classes (dry-cli)
+└── git_operations.rb   # Core business logic
+
+exe/worktrees           # CLI entry point
+spec/                   # Tests
+├── lib/                # Unit tests (RSpec)
+└── features/           # Integration tests (Aruba)
+```
+
+## Development Rules
+
+### Testing (NON-NEGOTIABLE)
+- Write failing test FIRST (Red phase)
+- Implement minimal code to pass (Green phase)
+- Refactor with tests passing (Refactor phase)
+- Use real git repositories, never mocks
+- Aruba for CLI integration tests, RSpec for unit tests
+
+### Architecture Constraints
+- No service layers (unnecessary for CLI tools)
+- No auto-initialization in modules
+- Pass data explicitly, avoid global state
+- Simple modules and functions over complex patterns
+
+### Code Quality
+- Structured logging to stderr only
+- Clear error messages with actionable guidance
+- Consistent exit codes: 0=success, 1=error, 2=validation, 3=precondition
+- Support --help, --version, --format json/text on all commands
+
+## Anti-Patterns (Learned from Bash Attempt)
+❌ Service layers in CLI tools
+❌ Auto-initialization on require/source
+❌ Mock-heavy tests instead of real git operations
+❌ Global state mutations
+❌ Complex inheritance hierarchies
+
+## Implementation Notes
+This project previously attempted bash implementation but discovered architectural mismatches. Ruby provides proper module system, explicit initialization, and clear testing boundaries that bash lacks.
+
+---
+*Based on Constitution v1.0.0*

@@ -11,7 +11,10 @@ Given the implementation details provided as an argument, do this:
    - Success criteria and acceptance criteria
    - Any technical constraints or dependencies mentioned
 
-3. Read the constitution at `.specify/memory/constitution.md` to understand constitutional requirements.
+3. Read the constitution at `.specify/memory/constitution.md` to understand constitutional requirements:
+   - Article I: Technology Appropriateness (Ruby for CLIs, avoid service layers)
+   - Article III: Test-First (RSpec + Aruba for Ruby)
+   - Article IV: Simplicity (max 2 layers, no unnecessary patterns)
 
 4. Execute the implementation plan template:
    - Load `.specify/templates/plan-template.md` (already copied to IMPL_PLAN path)
@@ -24,6 +27,9 @@ Given the implementation details provided as an argument, do this:
      * Phase 1 generates data-model.md, contracts/, quickstart.md
      * Phase 2 generates tasks.md
    - Incorporate user-provided details from arguments into Technical Context: $ARGUMENTS
+   - **CRITICAL**: Validate against constitution in Constitution Check section
+   - For CLIs: Default to Ruby + dry-cli unless justified otherwise
+   - Flag service layers and >2 architectural layers as violations
    - Update Progress Tracking as you complete each phase
 
 5. Verify execution completed:

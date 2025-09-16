@@ -43,18 +43,42 @@
 - Paths shown below assume single project - adjust based on plan.md structure
 
 ## Phase 3.1: Setup
+
+### Ruby CLI Project Setup (per Constitution):
+- [ ] T001 Create Ruby project structure (lib/, exe/, spec/)
+- [ ] T002 Initialize Gemfile with dry-cli, rspec, aruba dependencies
+- [ ] T003 [P] Configure RSpec with spec_helper.rb and support/aruba.rb
+- [ ] T004 [P] Configure bundler and gemspec file
+
+### General Project Setup:
 - [ ] T001 Create project structure per implementation plan
 - [ ] T002 Initialize [language] project with [framework] dependencies
 - [ ] T003 [P] Configure linting and formatting tools
 
 ## Phase 3.2: Tests First (TDD) ⚠️ MUST COMPLETE BEFORE 3.3
 **CRITICAL: These tests MUST be written and MUST FAIL before ANY implementation**
+
+### Ruby CLI Tests (per Constitution Article III):
+- [ ] T005 [P] Aruba feature test for CLI command in spec/features/[command]_spec.rb
+- [ ] T006 [P] RSpec unit test for main library module in spec/lib/[project]_spec.rb
+- [ ] T007 [P] Integration test using real git repository (no mocks)
+
+### General Tests:
 - [ ] T004 [P] Contract test POST /api/users in tests/contract/test_users_post.py
 - [ ] T005 [P] Contract test GET /api/users/{id} in tests/contract/test_users_get.py
 - [ ] T006 [P] Integration test user registration in tests/integration/test_registration.py
 - [ ] T007 [P] Integration test auth flow in tests/integration/test_auth.py
 
 ## Phase 3.3: Core Implementation (ONLY after tests are failing)
+
+### Ruby CLI Implementation (per Constitution):
+- [ ] T008 [P] Main CLI application class in lib/[project]/cli.rb
+- [ ] T009 [P] Individual command classes in lib/[project]/commands/[command].rb
+- [ ] T010 [P] Core business logic modules in lib/[project]/[domain].rb
+- [ ] T011 [P] CLI entry point in exe/[project]
+- [ ] T012 Error handling and structured logging to stderr
+
+### General Implementation:
 - [ ] T008 [P] User model in src/models/user.py
 - [ ] T009 [P] UserService CRUD in src/services/user_service.py
 - [ ] T010 [P] CLI --create-user in src/cli/user_commands.py

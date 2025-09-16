@@ -33,15 +33,20 @@
 [Extract from feature spec: primary requirement + technical approach from research]
 
 ## Technical Context
-**Language/Version**: [e.g., Python 3.11, Swift 5.9, Rust 1.75 or NEEDS CLARIFICATION]  
-**Primary Dependencies**: [e.g., FastAPI, UIKit, LLVM or NEEDS CLARIFICATION]  
-**Storage**: [if applicable, e.g., PostgreSQL, CoreData, files or N/A]  
-**Testing**: [e.g., pytest, XCTest, cargo test or NEEDS CLARIFICATION]  
+**Language/Version**: [Check constitution Article I for guidance - Ruby 3.2+ for CLIs, or NEEDS CLARIFICATION]
+**Primary Dependencies**: [e.g., dry-cli for Ruby CLIs, FastAPI, UIKit, LLVM or NEEDS CLARIFICATION]
+**Storage**: [if applicable, e.g., PostgreSQL, CoreData, files or N/A]
+**Testing**: [RSpec+Aruba for Ruby, pytest, XCTest, cargo test or NEEDS CLARIFICATION]
 **Target Platform**: [e.g., Linux server, iOS 15+, WASM or NEEDS CLARIFICATION]
-**Project Type**: [single/web/mobile - determines source structure]  
-**Performance Goals**: [domain-specific, e.g., 1000 req/s, 10k lines/sec, 60 fps or NEEDS CLARIFICATION]  
-**Constraints**: [domain-specific, e.g., <200ms p95, <100MB memory, offline-capable or NEEDS CLARIFICATION]  
+**Project Type**: [single/web/mobile - determines source structure]
+**Performance Goals**: [domain-specific, e.g., 1000 req/s, 10k lines/sec, 60 fps or NEEDS CLARIFICATION]
+**Constraints**: [domain-specific, e.g., <200ms p95, <100MB memory, offline-capable or NEEDS CLARIFICATION]
 **Scale/Scope**: [domain-specific, e.g., 10k users, 1M LOC, 50 screens or NEEDS CLARIFICATION]
+
+⚠️ **Technology Validation** (per Constitution Article I):
+- If bash for >100 lines: Requires justification in Complexity Tracking
+- If service layer in CLI: Requires justification in Complexity Tracking
+- Multi-command CLIs should use Ruby (dry-cli), Python (Click), or Go (Cobra)
 
 ## Constitution Check
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
@@ -57,14 +62,17 @@
 - Libraries listed: [name + purpose for each]
 - CLI per library: [commands with --help/--version/--format]
 - Library docs: llms.txt format planned?
+- No service layers in CLI tools? (unnecessary abstraction per Constitution)
+- Maximum 2 architectural layers? (commands + libraries per Article IV)
 
 **Testing (NON-NEGOTIABLE)**:
 - RED-GREEN-Refactor cycle enforced? (test MUST fail first)
 - Git commits show tests before implementation?
 - Order: Contract→Integration→E2E→Unit strictly followed?
-- Real dependencies used? (actual DBs, not mocks)
+- Real dependencies used? (actual git repos, not mocks per Constitution Article III)
 - Integration tests for: new libraries, contract changes, shared schemas?
-- FORBIDDEN: Implementation before test, skipping RED phase
+- Ruby: RSpec for unit tests, Aruba for CLI integration tests?
+- FORBIDDEN: Implementation before test, skipping RED phase, mock-heavy tests
 
 **Observability**:
 - Structured logging included?
@@ -92,9 +100,17 @@ specs/[###-feature]/
 ### Source Code (repository root)
 ```
 # Option 1: Single project (DEFAULT)
+# For Ruby CLIs (per Constitution):
+lib/
+├── [project_name]/
+│   ├── commands/        # CLI command classes
+│   └── [domain_logic]/  # Business logic modules
+exe/
+└── [project_name]       # CLI entry point
+
+# For other languages:
 src/
 ├── models/
-├── services/
 ├── cli/
 └── lib/
 
