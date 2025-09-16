@@ -51,5 +51,31 @@ This project started in bash but I discovered service layers don't belong in CLI
 
 The bash attempt taught me to Start Simple and choose tools that make me productive rather than fighting the language.
 
+## Current Implementation Status ✅
+
+### Planning Complete (2025-09-15)
+1. ✅ **Implementation plan** - Ruby CLI architecture designed
+2. ✅ **Task breakdown** - 35 TDD tasks ready (T001-T035 in specs/001-build-a-tool/tasks.md)
+3. **Ready for execution** - Start with T001 (project structure setup)
+
+### Recent Technology Decisions
+- **Git Integration**: Shell out to git commands (canonical interface, no library abstractions)
+- **Worktree Storage**: Global `~/.worktrees/` directory (separate from main repositories)
+- **Error Handling**: Structured exit codes (0=success, 1=general, 2=validation, 3=precondition)
+- **Configuration**: Command args override environment vars override config files
+- **Naming Convention**: Enforce NNN-kebab-feature format with validation
+- **Safety**: Conservative dirty-state policies (allow switch with warning, block unsafe removal)
+
+### Architecture Overview
+**Core Models**: FeatureWorktree, Repository, WorktreeManager, GitOperations
+**CLI Commands**: create, list, switch, remove, status (5 commands total)
+**Testing Strategy**: Aruba integration tests + RSpec unit tests (real git repos, no mocks)
+
+### Next Steps
+Execute tasks T001-T035 following Red-Green-Refactor methodology:
+- T001-T007: Project setup (Ruby structure, Gemfile, RSpec+Aruba config)
+- T008-T023: Test-first development (write failing tests)
+- T024-T035: Implementation (make tests pass)
+
 ---
 *Based on Personal Principles v2.0.0*

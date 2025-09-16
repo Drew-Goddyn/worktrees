@@ -1,0 +1,52 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+# Add lib directory to load path
+lib_path = File.expand_path('../lib', __dir__)
+$LOAD_PATH.unshift(lib_path) unless $LOAD_PATH.include?(lib_path)
+
+require 'worktrees'
+
+# Handle version flag
+if ARGV.include?('--version') || ARGV.include?('-v')
+  puts "worktrees #{Worktrees::VERSION}"
+  exit(0)
+end
+
+# Handle help flag
+if ARGV.empty? || ARGV.include?('--help') || ARGV.include?('-h')
+  puts <<~HELP
+    worktrees #{Worktrees::VERSION}
+
+    USAGE:
+        worktrees [OPTIONS] <COMMAND> [ARGS]
+
+    OPTIONS:
+        -h, --help     Show help information
+        -v, --version  Show version information
+        --verbose      Enable verbose output
+
+    COMMANDS:
+        create (c)     Create a new feature worktree
+        list (ls, l)   List all worktrees for current repository
+        switch (sw, s) Switch to a different worktree
+        remove (rm, r) Remove a worktree safely
+        status (st)    Show current worktree status
+
+    Use 'worktrees <command> --help' for more information about a command.
+
+    Examples:
+        worktrees create 001-new-feature
+        worktrees create 002-bug-fix main
+        worktrees list
+        worktrees list --format json
+        worktrees switch 001-new-feature
+        worktrees remove 001-new-feature
+        worktrees status
+
+  HELP
+  exit(0)
+end
+
+# Start the CLI application
+Worktrees::App.start

@@ -1,0 +1,106 @@
+# frozen_string_literal: true
+
+module Worktrees
+  module GitOperations
+    class << self
+      def create_worktree(path, branch, base_ref)
+        # Check if branch already exists
+        if branch_exists?(branch)
+          # Checkout existing branch
+          system('git', 'worktree', 'add', path, branch)
+        else
+          # Create new branch from base_ref
+          system('git', 'worktree', 'add', '-b', branch, path, base_ref)
+        end
+      end
+
+      def list_worktrees
+        begin
+          output = `git worktree list --porcelain`
+          raise GitError, "Failed to list worktrees: git command failed" unless $?.success?
+
+          parse_worktree_list(output)
+        rescue StandardError => e
+          raise GitError, "Failed to list worktrees: #{e.message}"
+        end
+      end
+
+      def remove_worktree(path, force: false)
+        args = ['git', 'worktree', 'remove']
+        args << '--force' if force
+        args << path
+
+        system(*args)
+      end
+
+      def branch_exists?(branch_name)
+        system('git', 'show-ref', '--verify', '--quiet', "refs/heads/#{branch_name}")
+      end
+
+      def current_branch
+        `git rev-parse --abbrev-ref HEAD`.strip
+      end
+
+      def is_clean?(worktree_path)
+        system('git', 'diff-index', '--quiet', 'HEAD', chdir: worktree_path)
+      end
+
+      def has_unpushed_commits?(branch_name)
+        begin
+          output = `git rev-list @{u}..HEAD`
+          $?.success? && !output.strip.empty?
+        rescue StandardError
+          # No upstream branch or other error - consider as no unpushed commits
+          false
+        end
+      end
+
+      def fetch_ref(ref)
+        system('git', 'fetch', 'origin', ref)
+      end
+
+      def delete_branch(branch_name, force: false)
+        flag = force ? '-D' : '-d'
+        system('git', 'branch', flag, branch_name)
+      end
+
+      def is_merged?(branch_name, base_branch = 'main')
+        # Check if all commits in branch_name are reachable from base_branch
+        system('git', 'merge-base', '--is-ancestor', branch_name, base_branch)
+      end
+
+      private
+
+      def parse_worktree_list(output)
+        worktrees = []
+        current_worktree = {}
+
+        output.each_line do |line|
+          line.strip!
+          next if line.empty?
+
+          case line
+          when /^worktree (.+)$/
+            # Save previous worktree if exists
+            worktrees << current_worktree unless current_worktree.empty?
+            current_worktree = { path: $1 }
+          when /^HEAD (.+)$/
+            current_worktree[:commit] = $1
+          when /^branch (.+)$/
+            current_worktree[:branch] = $1.sub('refs/heads/', '')
+          when /^detached$/
+            current_worktree[:detached] = true
+          when /^bare$/
+            current_worktree[:bare] = true
+          end
+        end
+
+        # Add the last worktree
+        worktrees << current_worktree unless current_worktree.empty?
+
+        # Filter out bare and main repository worktrees
+        worktrees.reject { |wt| wt[:bare] || wt[:path]&.end_with?('/.git') }
+      end
+    end
+  end
+end
