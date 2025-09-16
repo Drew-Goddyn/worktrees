@@ -4,6 +4,8 @@
 # Tests the remove command with --delete-branch functionality from quickstart.md
 # Scenario: worktrees remove 001-build-a-tool --delete-branch --merged-into main
 
+bats_require_minimum_version 1.5.0
+
 setup() {
 	export WORKTREES_CLI="/Users/drewgoddyn/projects/claude-worktrees/src/cli/worktrees"
 	export TEST_ROOT="${BATS_TMPDIR}/worktrees_remove_delete_test_$$"
@@ -81,24 +83,20 @@ branch_exists() {
 
 	# First, simulate that the worktree exists (would be created by create command)
 	# For now, just test the remove command with branch deletion flags
-	run "$WORKTREES_CLI" remove 001-build-a-tool --delete-branch --merged-into main --format json
+	run --separate-stderr "$WORKTREES_CLI" remove 001-build-a-tool --delete-branch --merged-into main --format json
 
-	# Currently expects failure due to unimplemented command
-	[ "$status" -eq 1 ]
-	[[ "$output" =~ "not yet implemented" ]]
+	# Should return valid JSON with expected schema
+	[ "$status" -eq 0 ]
+	is_valid_json "$output"
 
-	# When implemented, should return valid JSON with expected schema
-	# [ "$status" -eq 0 ]
-	# is_valid_json "$output"
-	#
 	# Expected output schema: {removed: boolean, branchDeleted: boolean}
-	# local json="$output"
-	# [[ "$json" =~ '"removed"' ]]
-	# [[ "$json" =~ '"branchDeleted"' ]]
-	# local removed=$(get_json_field "$json" "removed")
-	# local branch_deleted=$(get_json_field "$json" "branchDeleted")
-	# [ "$removed" = "true" ]
-	# [ "$branch_deleted" = "true" ]
+	local json="$output"
+	[[ "$json" =~ '"removed"' ]]
+	[[ "$json" =~ '"branchDeleted"' ]]
+	local removed=$(get_json_field "$json" "removed")
+	local branch_deleted=$(get_json_field "$json" "branchDeleted")
+	[ "$removed" = "true" ]
+	[ "$branch_deleted" = "true" ]
 }
 
 @test "remove worktree with merged branch should delete branch" {
@@ -107,19 +105,15 @@ branch_exists() {
 	# Verify the merged branch exists before removal
 	branch_exists '001-build-a-tool'
 
-	run "$WORKTREES_CLI" remove 001-build-a-tool --delete-branch --merged-into main --format json
+	run --separate-stderr "$WORKTREES_CLI" remove 001-build-a-tool --delete-branch --merged-into main --format json
 
-	# Currently expects failure due to unimplemented command
-	[ "$status" -eq 1 ]
-	[[ "$output" =~ "not yet implemented" ]]
-
-	# When implemented:
-	# [ "$status" -eq 0 ]
-	# is_valid_json "$output"
-	# local branch_deleted=$(get_json_field "$output" "branchDeleted")
-	# [ "$branch_deleted" = "true" ]
+	# Should succeed:
+	[ "$status" -eq 0 ]
+	is_valid_json "$output"
+	local branch_deleted=$(get_json_field "$output" "branchDeleted")
+	[ "$branch_deleted" = "true" ]
 	# Branch should no longer exist
-	# ! branch_exists '001-build-a-tool'
+	! branch_exists '001-build-a-tool'
 }
 
 # Merge verification tests
@@ -127,47 +121,35 @@ branch_exists() {
 	cd "$TEST_REPO"
 
 	# Try to remove unmerged branch with --delete-branch
-	run "$WORKTREES_CLI" remove 002-unmerged-feature --delete-branch --merged-into main --format json
+	run --separate-stderr "$WORKTREES_CLI" remove 002-unmerged-feature --delete-branch --merged-into main --format json
 
-	# Currently expects failure due to unimplemented command
-	[ "$status" -eq 1 ]
-	[[ "$output" =~ "not yet implemented" ]]
-
-	# When implemented, should fail with safety error (exit code 5)
-	# [ "$status" -eq 5 ]
-	# [[ "$output" =~ "not.*merged\|unmerged.*branch" ]]
+	# Should fail with safety error (exit code 5)
+	[ "$status" -eq 5 ]
+	[[ "$output" =~ "not.*merged\|unmerged.*branch" ]]
 	# Branch should still exist after failed removal
-	# branch_exists '002-unmerged-feature'
+	branch_exists '002-unmerged-feature'
 }
 
 @test "remove worktree with --merged-into validates merge base exists" {
 	cd "$TEST_REPO"
 
 	# Try with non-existent merge base
-	run "$WORKTREES_CLI" remove 001-build-a-tool --delete-branch --merged-into non-existent-branch --format json
+	run --separate-stderr "$WORKTREES_CLI" remove 001-build-a-tool --delete-branch --merged-into non-existent-branch --format json
 
-	# Currently expects failure due to unimplemented command
-	[ "$status" -eq 1 ]
-	[[ "$output" =~ "not yet implemented" ]]
-
-	# When implemented, should fail with precondition error (exit code 3)
-	# [ "$status" -eq 3 ]
-	# [[ "$output" =~ "merge.*base.*not.*found\|branch.*not.*exist" ]]
+	# Should fail with precondition error (exit code 3)
+	[ "$status" -eq 3 ]
+	[[ "$output" =~ "merge.*base.*not.*found\|branch.*not.*exist" ]]
 }
 
 @test "remove worktree without --merged-into flag when --delete-branch used" {
 	cd "$TEST_REPO"
 
 	# Try --delete-branch without --merged-into (should require merge verification)
-	run "$WORKTREES_CLI" remove 001-build-a-tool --delete-branch --format json
+	run --separate-stderr "$WORKTREES_CLI" remove 001-build-a-tool --delete-branch --format json
 
-	# Currently expects failure due to unimplemented command
-	[ "$status" -eq 1 ]
-	[[ "$output" =~ "not yet implemented" ]]
-
-	# When implemented, should fail with validation error (exit code 2)
-	# [ "$status" -eq 2 ]
-	# [[ "$output" =~ "merged-into.*required\|must.*specify.*merge.*base" ]]
+	# Should fail with validation error (exit code 2)
+	[ "$status" -eq 2 ]
+	[[ "$output" =~ "merged-into.*required\|must.*specify.*merge.*base" ]]
 }
 
 # Force flag behavior tests
@@ -175,17 +157,13 @@ branch_exists() {
 	cd "$TEST_REPO"
 
 	# Simulate worktree with untracked files (would be setup by create command)
-	run "$WORKTREES_CLI" remove 001-build-a-tool --force --format json
+	run --separate-stderr "$WORKTREES_CLI" remove 001-build-a-tool --force --format json
 
-	# Currently expects failure due to unimplemented command
-	[ "$status" -eq 1 ]
-	[[ "$output" =~ "not yet implemented" ]]
-
-	# When implemented:
-	# [ "$status" -eq 0 ]
-	# is_valid_json "$output"
-	# local removed=$(get_json_field "$output" "removed")
-	# [ "$removed" = "true" ]
+	# Should succeed:
+	[ "$status" -eq 0 ]
+	is_valid_json "$output"
+	local removed=$(get_json_field "$output" "removed")
+	[ "$removed" = "true" ]
 }
 
 @test "remove worktree with --force still prevents tracked changes deletion" {
@@ -193,34 +171,26 @@ branch_exists() {
 
 	# Simulate worktree with tracked changes (would be setup by create command)
 	# --force should NOT allow removal of tracked changes, only untracked/ignored files
-	run "$WORKTREES_CLI" remove 001-build-a-tool --force --format json
+	run --separate-stderr "$WORKTREES_CLI" remove 001-build-a-tool --force --format json
 
-	# Currently expects failure due to unimplemented command
-	[ "$status" -eq 1 ]
-	[[ "$output" =~ "not yet implemented" ]]
-
-	# When implemented and there are tracked changes:
-	# [ "$status" -eq 5 ]
-	# [[ "$output" =~ "tracked.*changes\|uncommitted.*changes" ]]
+	# When there are tracked changes, should fail:
+	[ "$status" -eq 5 ]
+	[[ "$output" =~ "tracked.*changes\|uncommitted.*changes" ]]
 }
 
 @test "remove worktree with --force and --delete-branch combines behaviors" {
 	cd "$TEST_REPO"
 
 	# Test combination of force flag with branch deletion
-	run "$WORKTREES_CLI" remove 001-build-a-tool --force --delete-branch --merged-into main --format json
+	run --separate-stderr "$WORKTREES_CLI" remove 001-build-a-tool --force --delete-branch --merged-into main --format json
 
-	# Currently expects failure due to unimplemented command
-	[ "$status" -eq 1 ]
-	[[ "$output" =~ "not yet implemented" ]]
-
-	# When implemented:
-	# [ "$status" -eq 0 ]
-	# is_valid_json "$output"
-	# local removed=$(get_json_field "$output" "removed")
-	# local branch_deleted=$(get_json_field "$output" "branchDeleted")
-	# [ "$removed" = "true" ]
-	# [ "$branch_deleted" = "true" ]
+	# Should succeed:
+	[ "$status" -eq 0 ]
+	is_valid_json "$output"
+	local removed=$(get_json_field "$output" "removed")
+	local branch_deleted=$(get_json_field "$output" "branchDeleted")
+	[ "$removed" = "true" ]
+	[ "$branch_deleted" = "true" ]
 }
 
 # Safety check tests
@@ -228,74 +198,58 @@ branch_exists() {
 	cd "$TEST_REPO"
 
 	# Simulate worktree with unpushed commits (no upstream)
-	run "$WORKTREES_CLI" remove 001-build-a-tool --format json
+	run --separate-stderr "$WORKTREES_CLI" remove 001-build-a-tool --format json
 
-	# Currently expects failure due to unimplemented command
-	[ "$status" -eq 1 ]
-	[[ "$output" =~ "not yet implemented" ]]
-
-	# When implemented and there are unpushed commits:
-	# [ "$status" -eq 5 ]
-	# [[ "$output" =~ "unpushed.*commits\|no.*upstream" ]]
+	# When there are unpushed commits, should fail:
+	[ "$status" -eq 5 ]
+	[[ "$output" =~ "unpushed.*commits\|no.*upstream" ]]
 }
 
 @test "remove worktree prevents deletion with operation in progress" {
 	cd "$TEST_REPO"
 
 	# Simulate worktree with git operation in progress (e.g., merge, rebase)
-	run "$WORKTREES_CLI" remove 001-build-a-tool --format json
+	run --separate-stderr "$WORKTREES_CLI" remove 001-build-a-tool --format json
 
-	# Currently expects failure due to unimplemented command
-	[ "$status" -eq 1 ]
-	[[ "$output" =~ "not yet implemented" ]]
-
-	# When implemented and there's an operation in progress:
-	# [ "$status" -eq 5 ]
-	# [[ "$output" =~ "operation.*in.*progress\|merge.*in.*progress\|rebase.*in.*progress" ]]
+	# When there's an operation in progress, should fail:
+	[ "$status" -eq 5 ]
+	[[ "$output" =~ "operation.*in.*progress\|merge.*in.*progress\|rebase.*in.*progress" ]]
 }
 
 # JSON output schema validation tests
 @test "remove worktree JSON output has required fields" {
 	cd "$TEST_REPO"
-	run "$WORKTREES_CLI" remove 001-build-a-tool --format json
+	run --separate-stderr "$WORKTREES_CLI" remove 001-build-a-tool --format json
 
-	# Currently expects failure due to unimplemented command
-	[ "$status" -eq 1 ]
-	[[ "$output" =~ "not yet implemented" ]]
+	# Validate JSON schema per contract
+	[ "$status" -eq 0 ]
+	is_valid_json "$output"
 
-	# When implemented, validate JSON schema per contract
-	# [ "$status" -eq 0 ]
-	# is_valid_json "$output"
-	#
 	# Required fields per contract: {removed: boolean, branchDeleted: boolean}
-	# local json="$output"
-	# [[ "$json" =~ '"removed"' ]]
-	# [[ "$json" =~ '"branchDeleted"' ]]
-	#
+	local json="$output"
+	[[ "$json" =~ '"removed"' ]]
+	[[ "$json" =~ '"branchDeleted"' ]]
+
 	# Validate field types
-	# local removed=$(get_json_field "$json" "removed")
-	# local branch_deleted=$(get_json_field "$json" "branchDeleted")
-	# [[ "$removed" =~ ^(true|false)$ ]]
-	# [[ "$branch_deleted" =~ ^(true|false)$ ]]
+	local removed=$(get_json_field "$json" "removed")
+	local branch_deleted=$(get_json_field "$json" "branchDeleted")
+	[[ "$removed" =~ ^(true|false)$ ]]
+	[[ "$branch_deleted" =~ ^(true|false)$ ]]
 }
 
 @test "remove worktree JSON output when branch not deleted" {
 	cd "$TEST_REPO"
 
 	# Remove without --delete-branch flag
-	run "$WORKTREES_CLI" remove 001-build-a-tool --format json
+	run --separate-stderr "$WORKTREES_CLI" remove 001-build-a-tool --format json
 
-	# Currently expects failure due to unimplemented command
-	[ "$status" -eq 1 ]
-	[[ "$output" =~ "not yet implemented" ]]
-
-	# When implemented:
-	# [ "$status" -eq 0 ]
-	# is_valid_json "$output"
-	# local removed=$(get_json_field "$output" "removed")
-	# local branch_deleted=$(get_json_field "$output" "branchDeleted")
-	# [ "$removed" = "true" ]
-	# [ "$branch_deleted" = "false" ]
+	# Should succeed:
+	[ "$status" -eq 0 ]
+	is_valid_json "$output"
+	local removed=$(get_json_field "$output" "removed")
+	local branch_deleted=$(get_json_field "$output" "branchDeleted")
+	[ "$removed" = "true" ]
+	[ "$branch_deleted" = "false" ]
 }
 
 # Flag parsing and validation tests
@@ -310,7 +264,7 @@ branch_exists() {
 	run "$WORKTREES_CLI" remove 001-build-a-tool --force
 	[[ ! "$output" =~ "Unknown.*force" ]]
 
-	run "$WORKTREES_CLI" remove 001-build-a-tool --format json
+	run --separate-stderr "$WORKTREES_CLI" remove 001-build-a-tool --format json
 	[[ ! "$output" =~ "Unknown.*format" ]]
 }
 
@@ -342,28 +296,20 @@ branch_exists() {
 @test "remove non-existent worktree should fail" {
 	cd "$TEST_REPO"
 
-	run "$WORKTREES_CLI" remove 999-non-existent --format json
+	run --separate-stderr "$WORKTREES_CLI" remove 999-non-existent --format json
 
-	# Currently expects failure due to unimplemented command
-	[ "$status" -eq 1 ]
-	[[ "$output" =~ "not yet implemented" ]]
-
-	# When implemented, should fail with not found error (exit code 6)
-	# [ "$status" -eq 6 ]
-	# [[ "$output" =~ "worktree.*not.*found\|does.*not.*exist" ]]
+	# Should fail with not found error (exit code 6)
+	[ "$status" -eq 6 ]
+	[[ "$output" =~ "worktree.*not.*found\|does.*not.*exist" ]]
 }
 
 @test "remove worktree outside git repository should fail" {
 	cd "$TEST_ROOT"  # Not in git repo
-	run "$WORKTREES_CLI" remove 001-build-a-tool --format json
+	run --separate-stderr "$WORKTREES_CLI" remove 001-build-a-tool --format json
 
-	# Currently expects failure due to unimplemented command
-	[ "$status" -eq 1 ]
-	[[ "$output" =~ "not yet implemented" ]]
-
-	# When implemented, should fail with precondition error (exit code 3)
-	# [ "$status" -eq 3 ]
-	# [[ "$output" =~ "not.*git.*repository\|not in.*git" ]]
+	# Should fail with precondition error (exit code 3)
+	[ "$status" -eq 3 ]
+	[[ "$output" =~ "not.*git.*repository\|not in.*git" ]]
 }
 
 # Advanced merge verification tests
@@ -387,29 +333,21 @@ branch_exists() {
 	git commit -m "Add more work"
 	git checkout main
 
-	run "$WORKTREES_CLI" remove 003-partially-merged --delete-branch --merged-into main --format json
+	run --separate-stderr "$WORKTREES_CLI" remove 003-partially-merged --delete-branch --merged-into main --format json
 
-	# Currently expects failure due to unimplemented command
-	[ "$status" -eq 1 ]
-	[[ "$output" =~ "not yet implemented" ]]
-
-	# When implemented, should detect branch is not fully merged
-	# [ "$status" -eq 5 ]
-	# [[ "$output" =~ "not.*fully.*merged\|unmerged.*commits" ]]
+	# Should detect branch is not fully merged
+	[ "$status" -eq 5 ]
+	[[ "$output" =~ "not.*fully.*merged\|unmerged.*commits" ]]
 }
 
 @test "remove worktree with multiple merge bases" {
 	cd "$TEST_REPO"
 
 	# Test with different merge base scenarios
-	run "$WORKTREES_CLI" remove 001-build-a-tool --delete-branch --merged-into HEAD --format json
+	run --separate-stderr "$WORKTREES_CLI" remove 001-build-a-tool --delete-branch --merged-into HEAD --format json
 
-	# Currently expects failure due to unimplemented command
-	[ "$status" -eq 1 ]
-	[[ "$output" =~ "not yet implemented" ]]
-
-	# When implemented, should handle different merge base refs
-	# [ "$status" -eq 0 ] # or appropriate error based on actual merge state
+	# Should handle different merge base refs
+	[ "$status" -eq 0 ] # or appropriate error based on actual merge state
 }
 
 # Text vs JSON output format tests
@@ -421,7 +359,7 @@ branch_exists() {
 	local text_output="$output"
 
 	# Test JSON format
-	run "$WORKTREES_CLI" remove 001-build-a-tool --format json
+	run --separate-stderr "$WORKTREES_CLI" remove 001-build-a-tool --format json
 	local json_output="$output"
 
 	# Currently both fail on implementation, but when implemented:
@@ -436,14 +374,10 @@ branch_exists() {
 
 	# This would be a full workflow test once create/switch commands are implemented
 	# For now, just test the remove portion of the workflow
-	run "$WORKTREES_CLI" remove 001-build-a-tool --delete-branch --merged-into main --format json
+	run --separate-stderr "$WORKTREES_CLI" remove 001-build-a-tool --delete-branch --merged-into main --format json
 
-	# Currently expects failure due to unimplemented command
-	[ "$status" -eq 1 ]
-	[[ "$output" =~ "not yet implemented" ]]
-
-	# When implemented as part of full workflow:
+	# As part of full workflow:
 	# Should successfully remove worktree and delete merged branch
-	# [ "$status" -eq 0 ]
-	# is_valid_json "$output"
+	[ "$status" -eq 0 ]
+	is_valid_json "$output"
 }

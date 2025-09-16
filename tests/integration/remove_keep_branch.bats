@@ -3,6 +3,8 @@
 # Integration tests for remove worktree (keep branch)
 # Tests the complete remove worktree flow from quickstart.md: "worktrees remove 001-build-a-tool"
 
+bats_require_minimum_version 1.5.0
+
 setup() {
 	export WORKTREES_CLI="/Users/drewgoddyn/projects/claude-worktrees/src/cli/worktrees"
 	export TEST_ROOT="${BATS_TMPDIR}/worktrees_remove_test_$$"
@@ -81,13 +83,9 @@ create_mock_worktree() {
 
 	run "$WORKTREES_CLI" remove 001-build-a-tool --root "$TEST_WORKTREES_ROOT"
 
-	# Currently expects failure due to unimplemented command
-	[ "$status" -eq 1 ]
-	[[ "$output" =~ "not yet implemented" ]]
-
-	# When implemented, should succeed and remove worktree directory
-	# [ "$status" -eq 0 ]
-	# [ ! -d "$TEST_WORKTREES_ROOT/001-build-a-tool" ]
+	# Should succeed and remove worktree directory
+	[ "$status" -eq 0 ]
+	[ ! -d "$TEST_WORKTREES_ROOT/001-build-a-tool" ]
 }
 
 @test "remove worktree scenario from quickstart.md" {
@@ -98,13 +96,9 @@ create_mock_worktree() {
 
 	run "$WORKTREES_CLI" remove 001-build-a-tool
 
-	# Currently expects failure due to unimplemented command
-	[ "$status" -eq 1 ]
-	[[ "$output" =~ "not yet implemented" ]]
-
-	# When implemented, should succeed
-	# [ "$status" -eq 0 ]
-	# [ ! -d "$TEST_WORKTREES_ROOT/001-build-a-tool" ]
+	# Should succeed
+	[ "$status" -eq 0 ]
+	[ ! -d "$TEST_WORKTREES_ROOT/001-build-a-tool" ]
 }
 
 @test "remove worktree keeps branch by default" {
@@ -117,14 +111,10 @@ create_mock_worktree() {
 
 	run "$WORKTREES_CLI" remove 001-test-feature --root "$TEST_WORKTREES_ROOT"
 
-	# Currently fails on implementation
-	[ "$status" -eq 1 ]
-	[[ "$output" =~ "not yet implemented" ]]
-
-	# When implemented, should remove worktree but keep branch
-	# [ "$status" -eq 0 ]
-	# [ ! -d "$TEST_WORKTREES_ROOT/001-test-feature" ]
-	# git branch | grep -q "001-test-feature"  # Branch should still exist
+	# Should remove worktree but keep branch
+	[ "$status" -eq 0 ]
+	[ ! -d "$TEST_WORKTREES_ROOT/001-test-feature" ]
+	git branch | grep -q "001-test-feature"  # Branch should still exist
 }
 
 # JSON output validation tests
@@ -132,38 +122,30 @@ create_mock_worktree() {
 	cd "$TEST_REPO"
 	create_mock_worktree "001-test-feature"
 
-	run "$WORKTREES_CLI" remove 001-test-feature --format json --root "$TEST_WORKTREES_ROOT"
+	run --separate-stderr "$WORKTREES_CLI" remove 001-test-feature --format json --root "$TEST_WORKTREES_ROOT"
 
-	# Currently fails on implementation
-	[ "$status" -eq 1 ]
-	[[ "$output" =~ "not yet implemented" ]]
+	# Validate JSON schema: {removed: boolean, branchDeleted: boolean}
+	[ "$status" -eq 0 ]
+	is_valid_json "$output"
 
-	# When implemented, validate JSON schema: {removed: boolean, branchDeleted: boolean}
-	# [ "$status" -eq 0 ]
-	# is_valid_json "$output"
-	#
-	# local removed=$(get_json_field "$output" "removed")
-	# local branch_deleted=$(get_json_field "$output" "branchDeleted")
-	# [ "$removed" = "true" ]
-	# [ "$branch_deleted" = "false" ]  # Default behavior keeps branch
+	local removed=$(get_json_field "$output" "removed")
+	local branch_deleted=$(get_json_field "$output" "branchDeleted")
+	[ "$removed" = "true" ]
+	[ "$branch_deleted" = "false" ]  # Default behavior keeps branch
 }
 
 @test "remove worktree JSON boolean fields are proper booleans" {
 	cd "$TEST_REPO"
 	create_mock_worktree "001-test-feature"
 
-	run "$WORKTREES_CLI" remove 001-test-feature --format json --root "$TEST_WORKTREES_ROOT"
+	run --separate-stderr "$WORKTREES_CLI" remove 001-test-feature --format json --root "$TEST_WORKTREES_ROOT"
 
-	# Currently fails on implementation
-	[ "$status" -eq 1 ]
-	[[ "$output" =~ "not yet implemented" ]]
-
-	# When implemented, ensure boolean values are not strings
-	# [ "$status" -eq 0 ]
-	# is_valid_json "$output"
-	# [[ "$output" =~ '"removed":[[:space:]]*true' ]]
-	# [[ "$output" =~ '"branchDeleted":[[:space:]]*false' ]]
-	# [[ ! "$output" =~ '"removed":[[:space:]]*"true"' ]]  # Should not be string
+	# Ensure boolean values are not strings
+	[ "$status" -eq 0 ]
+	is_valid_json "$output"
+	[[ "$output" =~ '"removed":[[:space:]]*true' ]]
+	[[ "$output" =~ '"branchDeleted":[[:space:]]*false' ]]
+	[[ ! "$output" =~ '"removed":[[:space:]]*"true"' ]]  # Should not be string
 }
 
 # Safety check tests - dirty worktree
@@ -176,14 +158,10 @@ create_mock_worktree() {
 
 	run "$WORKTREES_CLI" remove 001-dirty-feature --root "$TEST_WORKTREES_ROOT"
 
-	# Currently fails on implementation
-	[ "$status" -eq 1 ]
-	[[ "$output" =~ "not yet implemented" ]]
-
-	# When implemented, should fail with precondition error
-	# [ "$status" -eq 3 ]
-	# [[ "$output" =~ "uncommitted.*changes\|dirty.*worktree" ]]
-	# [ -d "$TEST_WORKTREES_ROOT/001-dirty-feature" ]  # Should not be removed
+	# Should fail with precondition error
+	[ "$status" -eq 3 ]
+	[[ "$output" =~ "uncommitted.*changes\|dirty.*worktree" ]]
+	[ -d "$TEST_WORKTREES_ROOT/001-dirty-feature" ]  # Should not be removed
 }
 
 @test "remove worktree with staged but uncommitted changes should fail" {
@@ -198,14 +176,10 @@ create_mock_worktree() {
 
 	run "$WORKTREES_CLI" remove 001-staged-feature --root "$TEST_WORKTREES_ROOT"
 
-	# Currently fails on implementation
-	[ "$status" -eq 1 ]
-	[[ "$output" =~ "not yet implemented" ]]
-
-	# When implemented, should fail with precondition error
-	# [ "$status" -eq 3 ]
-	# [[ "$output" =~ "staged.*changes\|uncommitted.*changes" ]]
-	# [ -d "$TEST_WORKTREES_ROOT/001-staged-feature" ]  # Should not be removed
+	# Should fail with precondition error
+	[ "$status" -eq 3 ]
+	[[ "$output" =~ "staged.*changes\|uncommitted.*changes" ]]
+	[ -d "$TEST_WORKTREES_ROOT/001-staged-feature" ]  # Should not be removed
 }
 
 # Safety check tests - unpushed commits
@@ -222,14 +196,10 @@ create_mock_worktree() {
 
 	run "$WORKTREES_CLI" remove 001-unpushed-feature --root "$TEST_WORKTREES_ROOT"
 
-	# Currently fails on implementation
-	[ "$status" -eq 1 ]
-	[[ "$output" =~ "not yet implemented" ]]
-
-	# When implemented, should fail with precondition error
-	# [ "$status" -eq 3 ]
-	# [[ "$output" =~ "unpushed.*commits\|no.*upstream" ]]
-	# [ -d "$TEST_WORKTREES_ROOT/001-unpushed-feature" ]  # Should not be removed
+	# Should fail with precondition error
+	[ "$status" -eq 3 ]
+	[[ "$output" =~ "unpushed.*commits\|no.*upstream" ]]
+	[ -d "$TEST_WORKTREES_ROOT/001-unpushed-feature" ]  # Should not be removed
 }
 
 # Safety check tests - operations in progress
@@ -243,14 +213,10 @@ create_mock_worktree() {
 
 	run "$WORKTREES_CLI" remove 001-merge-feature --root "$TEST_WORKTREES_ROOT"
 
-	# Currently fails on implementation
-	[ "$status" -eq 1 ]
-	[[ "$output" =~ "not yet implemented" ]]
-
-	# When implemented, should fail with precondition error
-	# [ "$status" -eq 3 ]
-	# [[ "$output" =~ "operation.*progress\|merge.*progress" ]]
-	# [ -d "$TEST_WORKTREES_ROOT/001-merge-feature" ]  # Should not be removed
+	# Should fail with precondition error
+	[ "$status" -eq 3 ]
+	[[ "$output" =~ "operation.*progress\|merge.*progress" ]]
+	[ -d "$TEST_WORKTREES_ROOT/001-merge-feature" ]  # Should not be removed
 }
 
 @test "remove worktree with rebase in progress should fail" {
@@ -262,14 +228,10 @@ create_mock_worktree() {
 
 	run "$WORKTREES_CLI" remove 001-rebase-feature --root "$TEST_WORKTREES_ROOT"
 
-	# Currently fails on implementation
-	[ "$status" -eq 1 ]
-	[[ "$output" =~ "not yet implemented" ]]
-
-	# When implemented, should fail with precondition error
-	# [ "$status" -eq 3 ]
-	# [[ "$output" =~ "operation.*progress\|rebase.*progress" ]]
-	# [ -d "$TEST_WORKTREES_ROOT/001-rebase-feature" ]  # Should not be removed
+	# Should fail with precondition error
+	[ "$status" -eq 3 ]
+	[[ "$output" =~ "operation.*progress\|rebase.*progress" ]]
+	[ -d "$TEST_WORKTREES_ROOT/001-rebase-feature" ]  # Should not be removed
 }
 
 # Edge case tests
@@ -278,13 +240,9 @@ create_mock_worktree() {
 
 	run "$WORKTREES_CLI" remove 999-non-existent --root "$TEST_WORKTREES_ROOT"
 
-	# Currently fails on implementation
-	[ "$status" -eq 1 ]
-	[[ "$output" =~ "not yet implemented" ]]
-
-	# When implemented, should fail with not found error
-	# [ "$status" -eq 2 ]
-	# [[ "$output" =~ "not found\|does not exist" ]]
+	# Should fail with not found error
+	[ "$status" -eq 2 ]
+	[[ "$output" =~ "not found\|does not exist" ]]
 }
 
 @test "remove worktree with invalid name format" {
@@ -296,13 +254,9 @@ create_mock_worktree() {
 	for name in "${invalid_names[@]}"; do
 		run "$WORKTREES_CLI" remove "$name" --root "$TEST_WORKTREES_ROOT"
 
-		# Currently fails on implementation, not validation
-		[ "$status" -eq 1 ]
-		[[ "$output" =~ "not yet implemented" ]]
-
-		# When implemented, should validate name format
-		# [ "$status" -ne 0 ]
-		# [[ "$output" =~ "Invalid.*name" ]]
+		# Should validate name format
+		[ "$status" -ne 0 ]
+		[[ "$output" =~ "Invalid.*name" ]]
 	done
 }
 
@@ -311,13 +265,9 @@ create_mock_worktree() {
 
 	run "$WORKTREES_CLI" remove 001-test-feature --root "$TEST_WORKTREES_ROOT"
 
-	# Currently fails on implementation
-	[ "$status" -eq 1 ]
-	[[ "$output" =~ "not yet implemented" ]]
-
-	# When implemented, should fail with appropriate error
-	# [ "$status" -eq 3 ]
-	# [[ "$output" =~ "not.*git.*repository\|not in.*git" ]]
+	# Should fail with appropriate error
+	[ "$status" -eq 3 ]
+	[[ "$output" =~ "not.*git.*repository\|not in.*git" ]]
 }
 
 @test "remove worktree without required name argument" {
@@ -342,13 +292,9 @@ create_mock_worktree() {
 
 	run "$WORKTREES_CLI" remove 001-custom-feature --root "$custom_root"
 
-	# Currently fails on implementation
-	[ "$status" -eq 1 ]
-	[[ "$output" =~ "not yet implemented" ]]
-
-	# When implemented, should use custom root
-	# [ "$status" -eq 0 ]
-	# [ ! -d "$custom_root/001-custom-feature" ]
+	# Should use custom root
+	[ "$status" -eq 0 ]
+	[ ! -d "$custom_root/001-custom-feature" ]
 }
 
 # Flag handling tests
@@ -360,7 +306,7 @@ create_mock_worktree() {
 	run "$WORKTREES_CLI" remove 001-test-feature --root "$TEST_WORKTREES_ROOT"
 	[[ ! "$output" =~ "Unknown.*root" ]]
 
-	run "$WORKTREES_CLI" remove 001-test-feature --format json
+	run --separate-stderr "$WORKTREES_CLI" remove 001-test-feature --format json
 	[[ ! "$output" =~ "Unknown.*format" ]]
 
 	run "$WORKTREES_CLI" remove 001-test-feature --force
@@ -377,13 +323,9 @@ create_mock_worktree() {
 
 	run "$WORKTREES_CLI" remove 001-force-feature --force --root "$TEST_WORKTREES_ROOT"
 
-	# Currently fails on implementation
-	[ "$status" -eq 1 ]
-	[[ "$output" =~ "not yet implemented" ]]
-
-	# When implemented, should succeed with --force for untracked files
-	# [ "$status" -eq 0 ]
-	# [ ! -d "$TEST_WORKTREES_ROOT/001-force-feature" ]
+	# Should succeed with --force for untracked files
+	[ "$status" -eq 0 ]
+	[ ! -d "$TEST_WORKTREES_ROOT/001-force-feature" ]
 }
 
 @test "remove worktree with --force still fails on tracked changes" {
@@ -397,14 +339,10 @@ create_mock_worktree() {
 
 	run "$WORKTREES_CLI" remove 001-force-tracked-feature --force --root "$TEST_WORKTREES_ROOT"
 
-	# Currently fails on implementation
-	[ "$status" -eq 1 ]
-	[[ "$output" =~ "not yet implemented" ]]
-
-	# When implemented, should still fail even with --force
-	# [ "$status" -eq 3 ]
-	# [[ "$output" =~ "tracked.*changes.*never.*allowed" ]]
-	# [ -d "$TEST_WORKTREES_ROOT/001-force-tracked-feature" ]  # Should not be removed
+	# Should still fail even with --force
+	[ "$status" -eq 3 ]
+	[[ "$output" =~ "tracked.*changes.*never.*allowed" ]]
+	[ -d "$TEST_WORKTREES_ROOT/001-force-tracked-feature" ]  # Should not be removed
 }
 
 # Clean worktree removal success cases
@@ -422,13 +360,9 @@ create_mock_worktree() {
 
 	run "$WORKTREES_CLI" remove 001-clean-feature --root "$TEST_WORKTREES_ROOT"
 
-	# Currently fails on implementation
-	[ "$status" -eq 1 ]
-	[[ "$output" =~ "not yet implemented" ]]
-
-	# When implemented, should succeed
-	# [ "$status" -eq 0 ]
-	# [ ! -d "$TEST_WORKTREES_ROOT/001-clean-feature" ]
+	# Should succeed
+	[ "$status" -eq 0 ]
+	[ ! -d "$TEST_WORKTREES_ROOT/001-clean-feature" ]
 }
 
 @test "remove worktree with all changes committed and pushed succeeds" {
@@ -443,13 +377,9 @@ create_mock_worktree() {
 
 	run "$WORKTREES_CLI" remove 001-pushed-feature --root "$TEST_WORKTREES_ROOT"
 
-	# Currently fails on implementation
-	[ "$status" -eq 1 ]
-	[[ "$output" =~ "not yet implemented" ]]
-
-	# When implemented, should succeed
-	# [ "$status" -eq 0 ]
-	# [ ! -d "$TEST_WORKTREES_ROOT/001-pushed-feature" ]
+	# Should succeed
+	[ "$status" -eq 0 ]
+	[ ! -d "$TEST_WORKTREES_ROOT/001-pushed-feature" ]
 }
 
 # Text output format tests
@@ -459,12 +389,8 @@ create_mock_worktree() {
 
 	run "$WORKTREES_CLI" remove 001-text-feature --root "$TEST_WORKTREES_ROOT"
 
-	# Currently fails on implementation
-	[ "$status" -eq 1 ]
-	[[ "$output" =~ "not yet implemented" ]]
-
-	# When implemented, should provide clear text output
-	# [ "$status" -eq 0 ]
-	# [[ "$output" =~ "Removed.*worktree.*001-text-feature" ]]
-	# [[ "$output" =~ "Branch.*001-text-feature.*preserved" ]]
+	# Should provide clear text output
+	[ "$status" -eq 0 ]
+	[[ "$output" =~ "Removed.*worktree.*001-text-feature" ]]
+	[[ "$output" =~ "Branch.*001-text-feature.*preserved" ]]
 }

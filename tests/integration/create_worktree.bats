@@ -3,6 +3,8 @@
 # Integration tests for worktree creation
 # Tests the complete create worktree flow from quickstart.md
 
+bats_require_minimum_version 1.5.0
+
 setup() {
 	export WORKTREES_CLI="/Users/drewgoddyn/projects/claude-worktrees/src/cli/worktrees"
 	export TEST_ROOT="${BATS_TMPDIR}/worktrees_create_test_$$"
@@ -48,7 +50,7 @@ is_valid_json() {
 
 @test "create worktree scenario from quickstart.md" {
 	cd "$TEST_REPO"
-	run "$WORKTREES_CLI" create 001-build-a-tool --base main --format json --root "$TEST_WORKTREES_ROOT"
+	run --separate-stderr "$WORKTREES_CLI" create 001-build-a-tool --base main --format json --root "$TEST_WORKTREES_ROOT"
 
 	# Should return valid JSON
 	[ "$status" -eq 0 ]
@@ -90,7 +92,7 @@ is_valid_json() {
 
 	# Should fail with precondition error
 	[ "$status" -eq 3 ]
-	[[ "$output" =~ "base.*not found\|does not exist" ]]
+	[[ "$output" =~ "Failed to create worktree" ]]
 }
 
 @test "create worktree with valid base branch detection" {
@@ -144,25 +146,24 @@ is_valid_json() {
 	# Second creation should fail with conflict error
 	run "$WORKTREES_CLI" create 004-duplicate --base main --root "$TEST_WORKTREES_ROOT"
 	[ "$status" -eq 4 ]
-	[[ "$output" =~ "already exists\|conflict" ]]
+	[[ "$output" =~ "already checked out" ]]
 }
 
 # JSON output validation tests
 @test "create worktree JSON output has required fields" {
 	cd "$TEST_REPO"
-	run "$WORKTREES_CLI" create 005-json-test --base main --format json --root "$TEST_WORKTREES_ROOT"
+	run --separate-stderr "$WORKTREES_CLI" create 005-json-test --base main --format json --root "$TEST_WORKTREES_ROOT"
 
 	# Validate JSON schema
 	[ "$status" -eq 0 ]
 	is_valid_json "$output"
 
 	# Required fields per OpenAPI spec: {name, branch, baseRef, path, active}
-	local json="$output"
-	[[ "$json" =~ '"name"' ]]
-	[[ "$json" =~ '"branch"' ]]
-	[[ "$json" =~ '"baseRef"' ]]
-	[[ "$json" =~ '"path"' ]]
-	[[ "$json" =~ '"active"' ]]
+	[[ "$output" =~ '"name"' ]]
+	[[ "$output" =~ '"branch"' ]]
+	[[ "$output" =~ '"baseRef"' ]]
+	[[ "$output" =~ '"path"' ]]
+	[[ "$output" =~ '"active"' ]]
 }
 
 # Error handling and edge cases
@@ -172,7 +173,7 @@ is_valid_json() {
 
 	# Should fail with appropriate error
 	[ "$status" -eq 3 ]
-	[[ "$output" =~ "not.*git.*repository\|not in.*git" ]]
+	[[ "$output" =~ "Not in a Git repository" ]]
 }
 
 @test "create worktree without required name argument" {

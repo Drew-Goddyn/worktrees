@@ -173,6 +173,7 @@ ios/ or android/
 
 5. **Update agent file incrementally** (O(1) operation):
    - Run `/scripts/bash/update-agent-context.sh cursor` for your AI assistant
+   - Run `/scripts/bash/update-agent-contxt.sh clude` for your AI assistant
    - If exists: Add only NEW tech from current plan
    - Preserve manual additions between markers
    - Update recent changes (keep last 3)

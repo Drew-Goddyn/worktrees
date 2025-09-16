@@ -224,6 +224,14 @@ handle_create_command() {
 				sibling="$2"
 				shift 2
 				;;
+			--format)
+				if [[ $# -lt 2 ]]; then
+					log_error "--format requires an argument"
+					exit_with_code "validation"
+				fi
+				format="$2"
+				shift 2
+				;;
 			*)
 				log_error "Unknown option for create command: $1"
 				exit_with_code "validation"
@@ -323,9 +331,18 @@ handle_create_command() {
 	fi
 
 	# Execute git worktree add command
-	if ! "${git_cmd[@]}" 2>&1; then
-		log_error "Failed to create worktree"
-		exit_with_code "precondition"
+	if [[ "$format" == "json" ]]; then
+		# In JSON mode, redirect git output to stderr to avoid interfering with JSON
+		if ! "${git_cmd[@]}" >&2; then
+			log_error "Failed to create worktree"
+			exit_with_code "precondition"
+		fi
+	else
+		# In text mode, allow git output to stdout
+		if ! "${git_cmd[@]}" 2>&1; then
+			log_error "Failed to create worktree"
+			exit_with_code "precondition"
+		fi
 	fi
 
 	# Verify worktree was created successfully
@@ -381,6 +398,14 @@ handle_switch_command() {
 					exit_with_code "validation"
 				fi
 				root_path="$2"
+				shift 2
+				;;
+			--format)
+				if [[ $# -lt 2 ]]; then
+					log_error "--format requires an argument"
+					exit_with_code "validation"
+				fi
+				format="$2"
 				shift 2
 				;;
 			*)
@@ -564,6 +589,14 @@ handle_remove_command() {
 				root_path="$2"
 				shift 2
 				;;
+			--format)
+				if [[ $# -lt 2 ]]; then
+					log_error "--format requires an argument"
+					exit_with_code "validation"
+				fi
+				format="$2"
+				shift 2
+				;;
 			*)
 				log_error "Unknown option for remove command: $1"
 				exit_with_code "validation"
@@ -672,6 +705,14 @@ handle_status_command() {
 					exit_with_code "validation"
 				fi
 				root_path="$2"
+				shift 2
+				;;
+			--format)
+				if [[ $# -lt 2 ]]; then
+					log_error "--format requires an argument"
+					exit_with_code "validation"
+				fi
+				format="$2"
 				shift 2
 				;;
 			*)
@@ -824,6 +865,14 @@ handle_list_command() {
 			--no-status)
 				include_status="false"
 				shift
+				;;
+			--format)
+				if [[ $# -lt 2 ]]; then
+					log_error "--format requires an argument"
+					exit_with_code "validation"
+				fi
+				format="$2"
+				shift 2
 				;;
 			*)
 				log_error "Error: Unknown option for list command: $1"

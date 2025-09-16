@@ -3,6 +3,8 @@
 # Integration tests for worktree listing with pagination
 # Tests the complete list worktrees flow from quickstart.md
 
+bats_require_minimum_version 1.5.0
+
 setup() {
 	export WORKTREES_CLI="/Users/drewgoddyn/projects/claude-worktrees/src/cli/worktrees"
 	export TEST_ROOT="${BATS_TMPDIR}/worktrees_list_test_$$"
@@ -59,7 +61,7 @@ get_json_field() {
 
 @test "list worktrees scenario from quickstart.md" {
 	cd "$TEST_REPO"
-	run "$WORKTREES_CLI" list --page 1 --page-size 20 --format json
+	run --separate-stderr "$WORKTREES_CLI" list --page 1 --page-size 20 --format json
 
 	# Should return valid JSON with pagination
 	[ "$status" -eq 0 ]
@@ -68,17 +70,13 @@ get_json_field() {
 
 @test "list empty worktrees shows appropriate message" {
 	cd "$TEST_REPO"
-	run "$WORKTREES_CLI" list --format json
+	run --separate-stderr "$WORKTREES_CLI" list --format json
 
-	# Currently fails on implementation
-	[ "$status" -eq 1 ]
-	[[ "$output" =~ "not yet implemented" ]]
-
-	# When implemented, should show empty items array
-	# [ "$status" -eq 0 ]
-	# is_valid_json "$output"
-	# local items_count=$(get_json_field "$output" "total")
-	# [ "$items_count" = "0" ]
+	# Should show items array (current repo is included as main worktree)
+	[ "$status" -eq 0 ]
+	is_valid_json "$output"
+	[[ "$output" =~ '"items":\[' ]]
+	[[ "$output" =~ '"total":' ]]
 }
 
 # Pagination parameter validation tests
@@ -155,11 +153,11 @@ get_json_field() {
 	cd "$TEST_REPO"
 	run "$WORKTREES_CLI" list --filter-name "build" --format json
 
-	# Currently fails on implementation
-	[ "$status" -eq 1 ]
-	[[ "$output" =~ "not yet implemented" ]]
+	# Should succeed
+	[ "$status" -eq 0 ]
+	is_valid_json "$output"
 
-	# When implemented, should filter results by name
+	# Should filter results by name
 	# [ "$status" -eq 0 ]
 	# is_valid_json "$output"
 	# Filter logic will be tested when worktrees exist
@@ -167,13 +165,13 @@ get_json_field() {
 
 @test "list worktrees filtering by base branch" {
 	cd "$TEST_REPO"
-	run "$WORKTREES_CLI" list --filter-base main --format json
+	run --separate-stderr "$WORKTREES_CLI" list --filter-base main --format json
 
-	# Currently fails on implementation
-	[ "$status" -eq 1 ]
-	[[ "$output" =~ "not yet implemented" ]]
+	# Should succeed
+	[ "$status" -eq 0 ]
+	is_valid_json "$output"
 
-	# When implemented, should filter by base branch
+	# Should filter by base branch
 	# [ "$status" -eq 0 ]
 	# is_valid_json "$output"
 }
@@ -181,11 +179,11 @@ get_json_field() {
 # JSON output schema validation tests
 @test "list worktrees JSON output has required pagination structure" {
 	cd "$TEST_REPO"
-	run "$WORKTREES_CLI" list --format json
+	run --separate-stderr "$WORKTREES_CLI" list --format json
 
-	# Currently fails on implementation
-	[ "$status" -eq 1 ]
-	[[ "$output" =~ "not yet implemented" ]]
+	# Should succeed
+	[ "$status" -eq 0 ]
+	is_valid_json "$output"
 
 	# When implemented, validate JSON structure
 	# [ "$status" -eq 0 ]
@@ -201,11 +199,11 @@ get_json_field() {
 
 @test "list worktrees JSON items have worktree schema" {
 	cd "$TEST_REPO"
-	run "$WORKTREES_CLI" list --format json
+	run --separate-stderr "$WORKTREES_CLI" list --format json
 
-	# Currently fails on implementation
-	[ "$status" -eq 1 ]
-	[[ "$output" =~ "not yet implemented" ]]
+	# Should succeed
+	[ "$status" -eq 0 ]
+	is_valid_json "$output"
 
 	# When implemented and worktrees exist, validate item schema
 	# Each item should have: {name, branch, baseRef, path, active, isDirty, hasUnpushedCommits}
@@ -214,11 +212,11 @@ get_json_field() {
 
 @test "list worktrees JSON pagination values are correct types" {
 	cd "$TEST_REPO"
-	run "$WORKTREES_CLI" list --page 2 --page-size 10 --format json
+	run --separate-stderr "$WORKTREES_CLI" list --page 2 --page-size 10 --format json
 
-	# Currently fails on implementation
-	[ "$status" -eq 1 ]
-	[[ "$output" =~ "not yet implemented" ]]
+	# Should succeed
+	[ "$status" -eq 0 ]
+	is_valid_json "$output"
 
 	# When implemented, validate field types
 	# [ "$status" -eq 0 ]
@@ -239,11 +237,11 @@ get_json_field() {
 	cd "$TEST_REPO"
 	run "$WORKTREES_CLI" list --page 1 --page-size 5 --filter-name "001" --filter-base main --format json
 
-	# Currently fails on implementation
-	[ "$status" -eq 1 ]
-	[[ "$output" =~ "not yet implemented" ]]
+	# Should succeed
+	[ "$status" -eq 0 ]
+	is_valid_json "$output"
 
-	# When implemented, should handle combined parameters
+	# Should handle combined parameters
 	# [ "$status" -eq 0 ]
 	# is_valid_json "$output"
 }
@@ -251,13 +249,13 @@ get_json_field() {
 # Default values tests
 @test "list worktrees uses default pagination values" {
 	cd "$TEST_REPO"
-	run "$WORKTREES_CLI" list --format json
+	run --separate-stderr "$WORKTREES_CLI" list --format json
 
-	# Currently fails on implementation
-	[ "$status" -eq 1 ]
-	[[ "$output" =~ "not yet implemented" ]]
+	# Should succeed
+	[ "$status" -eq 0 ]
+	is_valid_json "$output"
 
-	# When implemented, should use defaults: page=1, pageSize=20
+	# Should use defaults: page=1, pageSize=20
 	# [ "$status" -eq 0 ]
 	# is_valid_json "$output"
 	#
@@ -274,13 +272,9 @@ get_json_field() {
 	cd "$TEST_ROOT"  # Not in git repo
 	run "$WORKTREES_CLI" list
 
-	# Currently fails on implementation
-	[ "$status" -eq 1 ]
-	[[ "$output" =~ "not yet implemented" ]]
-
-	# When implemented, should fail with appropriate error
-	# [ "$status" -eq 3 ]
-	# [[ "$output" =~ "not.*git.*repository\|not in.*git" ]]
+	# Should fail with appropriate error
+	[ "$status" -eq 3 ]
+	[[ "$output" =~ "Not in a Git repository" ]]
 }
 
 # Text vs JSON output format tests
@@ -292,7 +286,7 @@ get_json_field() {
 	local text_output="$output"
 
 	# Test JSON format
-	run "$WORKTREES_CLI" list --format json
+	run --separate-stderr "$WORKTREES_CLI" list --format json
 	local json_output="$output"
 
 	# Currently both fail on implementation, but when implemented:
