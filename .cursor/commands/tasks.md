@@ -23,7 +23,7 @@ Given the context provided as an argument, do this:
      * **Setup tasks**: Project init, dependencies, linting
      * **Ruby CLI Setup**: Gemfile, RSpec config, dry-cli setup (if Ruby detected)
      * **Test tasks [P]**: Aruba feature tests, RSpec unit tests (Ruby), contract tests
-     * **Core tasks**: CLI commands, business logic modules (NO service layers per Constitution)
+     * **Core tasks**: CLI commands, business logic modules (Simple Over Clever approach)
      * **Integration tasks**: Real git operations, error handling, logging
      * **Polish tasks [P]**: Unit tests, performance, docs
 
@@ -34,7 +34,7 @@ Given the context provided as an argument, do this:
    - Each user story → Aruba integration test marked [P] (Ruby)
    - Different files = can be parallel [P]
    - Same file = sequential (no [P])
-   - **CRITICAL**: Tests MUST be created before implementation (TDD per Constitution)
+   - **IMPORTANT**: Tests MUST be created before implementation (Test-Driven Development is Fundamental)
 
 5. Order tasks by dependencies:
    - Setup before everything

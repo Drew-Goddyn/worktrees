@@ -1,12 +1,12 @@
 # Cursor IDE Development Guidelines - Worktrees Project
 
-This project follows constitutional principles defined in `.specify/memory/constitution.md` for Ruby CLI development.
+This project follows my personal development principles defined in `.specify/memory/constitution.md` for Ruby CLI development.
 
-## Technology Choices (Per Constitution v1.0.0)
-- Ruby 3.2+ with dry-cli framework for CLI tools
+## My Technology Choices
+- Ruby 3.2+ with dry-cli framework (Ruby First principle)
 - RSpec + Aruba for testing (no mocks - use real git repositories)
-- lib/ + exe/ structure (no service layers)
-- Maximum 2 architectural layers: commands + business logic
+- lib/ + exe/ structure (Simple Over Clever)
+- Focus on clear, maintainable code I can understand in six months
 
 ## File Structure
 ```
@@ -21,36 +21,35 @@ spec/                   # Tests
 └── features/           # Integration tests (Aruba)
 ```
 
-## Development Rules
+## My Development Approach
 
-### Testing (NON-NEGOTIABLE)
-- Write failing test FIRST (Red phase)
-- Implement minimal code to pass (Green phase)
-- Refactor with tests passing (Refactor phase)
-- Use real git repositories, never mocks
+### Test-Driven Development is Fundamental
+- Write failing test FIRST (Red-Green-Refactor cycle)
+- Make it pass with minimal code (Simple Over Clever)
+- Refactor only when tests are green (Write It Like I'll Maintain It)
+- Use real git repositories, never mocks (test real behavior)
 - Aruba for CLI integration tests, RSpec for unit tests
 
-### Architecture Constraints
-- No service layers (unnecessary for CLI tools)
-- No auto-initialization in modules
-- Pass data explicitly, avoid global state
-- Simple modules and functions over complex patterns
+### What I've Learned to Avoid
+- Service layers in CLI tools (unnecessary complexity)
+- Auto-initialization on require (causes side effects)
+- Global state mutations (pass data explicitly)
+- Clever abstractions I won't understand later
 
-### Code Quality
-- Structured logging to stderr only
+### User Experience That Actually Helps
 - Clear error messages with actionable guidance
 - Consistent exit codes: 0=success, 1=error, 2=validation, 3=precondition
 - Support --help, --version, --format json/text on all commands
+- Show progress for long operations, handle Ctrl+C gracefully
 
-## Anti-Patterns (Learned from Bash Attempt)
-❌ Service layers in CLI tools
-❌ Auto-initialization on require/source
-❌ Mock-heavy tests instead of real git operations
-❌ Global state mutations
-❌ Complex inheritance hierarchies
+## What I Learned from the Bash Attempt
+This project started in bash but I discovered service layers don't belong in CLI tools. Ruby gives me:
+- Natural module system (no source conflicts)
+- Explicit initialization (no auto-magic side effects)
+- Clear testing boundaries with RSpec and Aruba
+- Code I can actually maintain
 
-## Implementation Notes
-This project previously attempted bash implementation but discovered architectural mismatches. Ruby provides proper module system, explicit initialization, and clear testing boundaries that bash lacks.
+The bash attempt taught me to Start Simple and choose tools that make me productive rather than fighting the language.
 
 ---
-*Based on Constitution v1.0.0*
+*Based on Personal Principles v2.0.0*

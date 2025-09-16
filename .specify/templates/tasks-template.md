@@ -55,50 +55,51 @@
 - [ ] T002 Initialize [language] project with [framework] dependencies
 - [ ] T003 [P] Configure linting and formatting tools
 
-## Phase 3.2: Tests First (TDD) ⚠️ MUST COMPLETE BEFORE 3.3
-**CRITICAL: These tests MUST be written and MUST FAIL before ANY implementation**
+## Red Phase: Write Failing Tests
+**Remember: "I start every feature with a failing test" - write these first, watch them fail**
 
-### Ruby CLI Tests (per Constitution Article III):
-- [ ] T005 [P] Aruba feature test for CLI command in spec/features/[command]_spec.rb
-- [ ] T006 [P] RSpec unit test for main library module in spec/lib/[project]_spec.rb
-- [ ] T007 [P] Integration test using real git repository (no mocks)
+### Ruby CLI Tests (following "Test Real Behavior"):
+- [ ] T005 [P] Aruba feature test for main CLI command in spec/features/[command]_spec.rb
+- [ ] T006 [P] RSpec unit test for core logic in spec/lib/[project]_spec.rb
+- [ ] T007 [P] Integration test with real dependencies (actual git repos, files, etc.)
 
 ### General Tests:
-- [ ] T004 [P] Contract test POST /api/users in tests/contract/test_users_post.py
-- [ ] T005 [P] Contract test GET /api/users/{id} in tests/contract/test_users_get.py
-- [ ] T006 [P] Integration test user registration in tests/integration/test_registration.py
-- [ ] T007 [P] Integration test auth flow in tests/integration/test_auth.py
+- [ ] T004 [P] API test for key endpoints in tests/api/test_[endpoint].py
+- [ ] T005 [P] Integration test for main workflow in tests/integration/test_[workflow].py
+- [ ] T006 [P] Edge case tests in tests/edge_cases/test_[scenario].py
 
-## Phase 3.3: Core Implementation (ONLY after tests are failing)
+## Green Phase: Make Tests Pass
+**Goal: Write minimal code to make red tests green - "Simple Over Clever"**
 
-### Ruby CLI Implementation (per Constitution):
+### Ruby CLI Implementation:
 - [ ] T008 [P] Main CLI application class in lib/[project]/cli.rb
-- [ ] T009 [P] Individual command classes in lib/[project]/commands/[command].rb
-- [ ] T010 [P] Core business logic modules in lib/[project]/[domain].rb
-- [ ] T011 [P] CLI entry point in exe/[project]
-- [ ] T012 Error handling and structured logging to stderr
+- [ ] T009 [P] Command classes in lib/[project]/commands/[command].rb (one per command)
+- [ ] T010 [P] Core logic modules in lib/[project]/[domain].rb (focused on real problems)
+- [ ] T011 [P] CLI entry point in exe/[project] (keep it simple)
+- [ ] T012 Error handling that "Fails Gracefully" (good messages, reasonable defaults)
 
 ### General Implementation:
-- [ ] T008 [P] User model in src/models/user.py
-- [ ] T009 [P] UserService CRUD in src/services/user_service.py
-- [ ] T010 [P] CLI --create-user in src/cli/user_commands.py
-- [ ] T011 POST /api/users endpoint
-- [ ] T012 GET /api/users/{id} endpoint
-- [ ] T013 Input validation
-- [ ] T014 Error handling and logging
+- [ ] T008 [P] Core models/classes in src/[domain]/
+- [ ] T009 [P] Main functionality in src/[feature]/
+- [ ] T010 [P] CLI interface in src/cli/ (if applicable)
+- [ ] T011 API endpoints (if applicable)
+- [ ] T012 Input validation and error handling
+- [ ] T013 Configuration and setup
 
-## Phase 3.4: Integration
-- [ ] T015 Connect UserService to DB
-- [ ] T016 Auth middleware
-- [ ] T017 Request/response logging
-- [ ] T018 CORS and security headers
+## Refactor Phase: Clean Up Code
+**"Write It Like I'll Maintain It" - make it readable and remove duplication**
 
-## Phase 3.5: Polish
-- [ ] T019 [P] Unit tests for validation in tests/unit/test_validation.py
-- [ ] T020 Performance tests (<200ms)
-- [ ] T021 [P] Update docs/api.md
-- [ ] T022 Remove duplication
-- [ ] T023 Run manual-testing.md
+- [ ] T015 [P] Refactor repeated patterns (DRY principle)
+- [ ] T016 [P] Improve naming and structure (clear communication with future self)
+- [ ] T017 [P] Add missing edge case tests (where does this break?)
+- [ ] T018 [P] Update documentation with examples and rationale
+- [ ] T019 [P] Performance check (measure if it matters, optimize if slow)
+- [ ] T020 [P] Security review (validate inputs, avoid injection)
+
+## Final Integration
+- [ ] T021 Connect all pieces together
+- [ ] T022 End-to-end testing with real scenarios
+- [ ] T023 Manual testing and verification
 
 ## Dependencies
 - Tests (T004-T007) before implementation (T008-T014)

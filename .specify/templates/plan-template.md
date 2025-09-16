@@ -33,56 +33,54 @@
 [Extract from feature spec: primary requirement + technical approach from research]
 
 ## Technical Context
-**Language/Version**: [Check constitution Article I for guidance - Ruby 3.2+ for CLIs, or NEEDS CLARIFICATION]
+**Language/Version**: [Ruby 3.2+ for CLIs (Ruby First principle), or NEEDS CLARIFICATION]
 **Primary Dependencies**: [e.g., dry-cli for Ruby CLIs, FastAPI, UIKit, LLVM or NEEDS CLARIFICATION]
 **Storage**: [if applicable, e.g., PostgreSQL, CoreData, files or N/A]
-**Testing**: [RSpec+Aruba for Ruby, pytest, XCTest, cargo test or NEEDS CLARIFICATION]
+**Testing**: [RSpec+Aruba for Ruby CLIs, pytest, XCTest, cargo test or NEEDS CLARIFICATION]
 **Target Platform**: [e.g., Linux server, iOS 15+, WASM or NEEDS CLARIFICATION]
 **Project Type**: [single/web/mobile - determines source structure]
 **Performance Goals**: [domain-specific, e.g., 1000 req/s, 10k lines/sec, 60 fps or NEEDS CLARIFICATION]
 **Constraints**: [domain-specific, e.g., <200ms p95, <100MB memory, offline-capable or NEEDS CLARIFICATION]
 **Scale/Scope**: [domain-specific, e.g., 10k users, 1M LOC, 50 screens or NEEDS CLARIFICATION]
 
-⚠️ **Technology Validation** (per Constitution Article I):
-- If bash for >100 lines: Requires justification in Complexity Tracking
-- If service layer in CLI: Requires justification in Complexity Tracking
-- Multi-command CLIs should use Ruby (dry-cli), Python (Click), or Go (Cobra)
+💡 **Technology Check** (following "Ruby First" and "Simple Over Clever"):
+- CLI tools: Start with Ruby + dry-cli unless there's a specific reason not to
+- If choosing something else: Explain why in Complexity Tracking
+- Remember: "Life's too short for verbose languages when building personal tools"
 
-## Constitution Check
-*GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
+## Development Principles Check
+*Check before proceeding. Re-evaluate after design phase.*
 
-**Simplicity**:
-- Projects: [#] (max 3 - e.g., api, cli, tests)
-- Using framework directly? (no wrapper classes)
-- Single data model? (no DTOs unless serialization differs)
-- Avoiding patterns? (no Repository/UoW without proven need)
+**"Start Simple, Grow Thoughtfully"**:
+- Starting as simple as possible? (avoid unnecessary complexity)
+- Only adding what's actually needed? (not what might be needed)
+- Clear focused purpose? (one thing well)
 
-**Architecture**:
-- EVERY feature as library? (no direct app code)
-- Libraries listed: [name + purpose for each]
-- CLI per library: [commands with --help/--version/--format]
-- Library docs: llms.txt format planned?
-- No service layers in CLI tools? (unnecessary abstraction per Constitution)
-- Maximum 2 architectural layers? (commands + libraries per Article IV)
+**"Ruby First" (for CLI tools)**:
+- Using Ruby + proven libraries? (dry-cli, etc.)
+- Leveraging Ruby ecosystem instead of reinventing?
+- Language choice matches tool complexity?
 
-**Testing (NON-NEGOTIABLE)**:
-- RED-GREEN-Refactor cycle enforced? (test MUST fail first)
-- Git commits show tests before implementation?
-- Order: Contract→Integration→E2E→Unit strictly followed?
-- Real dependencies used? (actual git repos, not mocks per Constitution Article III)
-- Integration tests for: new libraries, contract changes, shared schemas?
-- Ruby: RSpec for unit tests, Aruba for CLI integration tests?
-- FORBIDDEN: Implementation before test, skipping RED phase, mock-heavy tests
+**"Test-Driven Development is Fundamental"**:
+- Planning to write tests first? (Red-Green-Refactor cycle)
+- Testing real behavior? (actual files, services, edge cases)
+- Using appropriate tools? (RSpec for logic, Aruba for CLI integration)
+- Integration tests prioritized? (where CLI tools actually break)
 
-**Observability**:
-- Structured logging included?
-- Frontend logs → backend? (unified stream)
-- Error context sufficient?
+**"Write It Like I'll Maintain It"**:
+- Clear naming and structure planned?
+- Reasonable documentation approach?
+- Capturing why, not just what?
 
-**Versioning**:
-- Version number assigned? (MAJOR.MINOR.BUILD)
-- BUILD increments on every change?
-- Breaking changes handled? (parallel tests, migration plan)
+**"Fail Gracefully"**:
+- Good error messages planned? (help debug faster)
+- Reasonable defaults? (work without fiddling)
+- Input validation? (catch problems early)
+
+**"Help That Actually Helps"**:
+- Clear help text planned? (--help should be useful)
+- Good examples for common usage?
+- Standard CLI conventions? (consistent with expectations)
 
 ## Project Structure
 
@@ -100,17 +98,19 @@ specs/[###-feature]/
 ### Source Code (repository root)
 ```
 # Option 1: Single project (DEFAULT)
-# For Ruby CLIs (per Constitution):
+# For Ruby CLIs (following "Simple Over Clever"):
 lib/
 ├── [project_name]/
 │   ├── commands/        # CLI command classes
-│   └── [domain_logic]/  # Business logic modules
+│   └── [domain_logic]/  # Core logic modules
 exe/
 └── [project_name]       # CLI entry point
+spec/
+├── lib/                 # Unit tests
+└── features/            # Aruba integration tests
 
 # For other languages:
 src/
-├── models/
 ├── cli/
 └── lib/
 

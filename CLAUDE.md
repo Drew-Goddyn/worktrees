@@ -1,14 +1,17 @@
 # Claude Code Development Guidelines - Worktrees Project
 
-This project follows the constitutional principles defined in `.specify/memory/constitution.md` for Ruby CLI development.
+This project follows my personal development principles defined in `.specify/memory/constitution.md`.
 
-## Technology Stack (Per Constitution v1.0.0)
+## My Technology Choices
+
+### Why Ruby
+**I choose Ruby because it makes me productive and happy.** Life's too short for verbose languages when building personal tools. Ruby lets me focus on solving problems instead of fighting syntax.
 
 ### Core Technologies
-- **Language**: Ruby 3.2+
-- **CLI Framework**: dry-cli (minimal, well-tested, consistent)
+- **Language**: Ruby 3.2+ (Ruby First principle)
+- **CLI Framework**: dry-cli (proven library, not reinventing wheels)
 - **Testing**: RSpec for unit tests, Aruba for CLI integration tests
-- **Dependencies**: Bundler for management, minimal external gems
+- **Dependencies**: Bundler, minimal external gems
 - **Structure**: `lib/` for logic, `exe/` for CLI entry point
 
 ### Project Structure
@@ -30,49 +33,45 @@ spec/
     └── aruba.rb         # Aruba configuration
 ```
 
-## Constitutional Compliance
+## Following My Principles
 
-### Article I: Technology Appropriateness ✅
-- Using Ruby for multi-command CLI (appropriate complexity)
-- Using dry-cli framework (proven pattern)
-- No service layers (unnecessary abstraction avoided)
+### "Ruby First" ✅
+**Using Ruby because it makes me productive and happy.** Multi-command CLI tools are perfect for Ruby + dry-cli. No fighting verbose syntax - just solving the actual problem.
 
-### Article II: Library-First Architecture ✅
-- Core logic in `lib/worktrees/` modules
-- CLI layer only handles argument parsing and output
-- Clear separation between presentation and business logic
+### "Simple Over Clever" ✅
+**Code I can understand in six months.** Clear naming, obvious structure, focused purpose. No unnecessary abstraction or enterprise patterns.
 
-### Article III: Test-First Development (NON-NEGOTIABLE) ✅
-- RSpec for unit tests of business logic
+### "Start Simple, Grow Thoughtfully" ✅
+**Starting as a simple worktree management script.** Only adding complexity as I actually need it, not as I think I might need it.
+
+### "Test-Driven Development is Fundamental" ✅
+**Writing tests first, always.** Red-Green-Refactor cycle:
+- RSpec for unit tests of core logic
 - Aruba for CLI integration tests with real git repositories
-- TDD: Write failing tests first, then implement
-- No mock-heavy tests - use real git operations
+- Testing real behavior, not mocked abstractions
 
-### Article IV: Simplicity and Maintainability ✅
-- Maximum 2 layers: commands + business logic
-- No design patterns without demonstrated need
-- YAGNI principle applied throughout
+## What I've Learned to Avoid
 
-## Anti-Patterns to Avoid
+Based on the bash attempt and general experience:
 
-❌ **Service layers in CLI tools** - Use simple modules and functions instead
-❌ **Auto-initialization on require** - Explicit initialization only
-❌ **Mock-heavy tests** - Use real git repositories and operations
-❌ **Deep inheritance hierarchies** - Prefer composition
-❌ **Global state mutations** - Pass data explicitly between functions
+**Over-engineering** - Started with "service layers" in bash. Learned to keep it simple.
+**Auto-magic initialization** - Things that happen automatically on import/require cause problems.
+**Mock-heavy tests** - Testing fake behavior instead of real behavior leads to surprises.
+**Clever abstractions** - Code that's hard to understand in six months isn't worth it.
+**Feature creep** - Tools that do everything end up doing nothing well.
 
-## Development Workflow
+## My Development Workflow
 
 ### Planning Phase
-1. Constitution defines technology choices (Ruby + dry-cli)
-2. `/plan` command reads constitution and generates appropriate architecture
-3. `/tasks` command generates Ruby-specific implementation tasks
+1. Personal principles guide technology choices (Ruby + dry-cli)
+2. `/plan` command reads my principles and generates sensible architecture
+3. `/tasks` command creates Red-Green-Refactor tasks
 
-### Implementation Phase
-1. **RED**: Write failing test (RSpec unit test or Aruba feature test)
-2. **GREEN**: Write minimal code to make test pass
-3. **REFACTOR**: Improve code while keeping tests green
-4. Commit only when tests are passing
+### Red-Green-Refactor Implementation
+1. **RED**: Write failing test first (RSpec unit test or Aruba feature test)
+2. **GREEN**: Write minimal code to make test pass (Simple Over Clever)
+3. **REFACTOR**: Clean up code while keeping tests green (Write It Like I'll Maintain It)
+4. Commit when tests are green
 
 ### Testing Approach
 - **Unit tests**: Test business logic modules in isolation
@@ -122,4 +121,4 @@ These issues are avoided in Ruby through:
 
 ---
 
-*Based on Constitution v1.0.0 - Last updated: 2025-01-15*
+*Based on Personal Principles v2.0.0 - Last updated: 2025-01-15*
