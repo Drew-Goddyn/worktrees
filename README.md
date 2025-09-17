@@ -135,7 +135,6 @@ lib/worktrees/           # Ruby source code
 
 exe/worktrees            # CLI entry point
 spec/                    # RSpec test suite
-archive/                 # Previous bash implementation
 ```
 
 ### Architecture
