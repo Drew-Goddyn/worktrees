@@ -26,19 +26,29 @@ RSpec.describe 'worktrees remove', type: :aruba do
 
   it 'prevents removing active worktree' do
     run_command('worktrees switch 001-remove-test')
-    run_command('worktrees remove 001-remove-test')
 
-    expect(last_command_started).to have_exit_status(2)
-    expect(last_command_started).to have_output_on_stderr(/Cannot remove active worktree/)
+    # Try to remove the worktree from within it (should fail)
+    cd('.worktrees/001-remove-test') do
+      run_command('worktrees remove 001-remove-test')
+      expect(last_command_started).to have_exit_status(3)
+      expect(last_command_started).to have_output_on_stderr(/Cannot remove active worktree/)
+    end
   end
 
   it 'prevents removing dirty worktree' do
-    # Switch to worktree and make it dirty
     run_command('worktrees switch 001-remove-test')
-    write_file('dirty.txt', 'uncommitted change')
-    run_command('cd ..')  # Switch back to main repo
-    run_command('worktrees remove 001-remove-test')
 
+    # Make the worktree dirty by adding and modifying a tracked file
+    cd('.worktrees/001-remove-test') do
+      write_file('test.txt', 'initial content')
+      run_command('git add test.txt')
+      run_command('git commit -m "Add test file"')
+      # Now modify the tracked file to make it dirty
+      write_file('test.txt', 'modified content')
+    end
+
+    # Try to remove the dirty worktree from outside (should fail)
+    run_command('worktrees remove 001-remove-test')
     expect(last_command_started).to have_exit_status(3)
     expect(last_command_started).to have_output_on_stderr(/has uncommitted changes/)
   end

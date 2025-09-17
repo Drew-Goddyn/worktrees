@@ -1,98 +1,89 @@
 # frozen_string_literal: true
 
 require 'spec_helper'
+require 'support/aruba'
 
-RSpec.describe Worktrees::Models::Repository do
-  let(:temp_repo_path) { '/tmp/test-repo' }
-
+RSpec.describe Worktrees::Models::Repository, type: :aruba do
   describe '#initialize' do
     it 'creates repository with valid git directory' do
-      # Mock File.directory? to simulate valid .git directory
-      allow(File).to receive(:directory?).with("#{temp_repo_path}/.git").and_return(true)
+      setup_test_repo
 
-      repo = described_class.new(temp_repo_path)
-      expect(repo.root_path).to eq(temp_repo_path)
+      repo = described_class.new(expand_path('.'))
+      expect(repo.root_path).to eq(expand_path('.'))
     end
 
     it 'raises error for invalid repository' do
-      allow(File).to receive(:directory?).with("#{temp_repo_path}/.git").and_return(false)
+      # Create a directory that's not a git repo
+      create_directory('not-a-repo')
 
-      expect { described_class.new(temp_repo_path) }
+      expect { described_class.new(expand_path('not-a-repo')) }
         .to raise_error(Worktrees::GitError, /Not a git repository/)
     end
   end
 
   describe '#default_branch' do
     it 'detects main as default branch' do
-      repo = described_class.new(temp_repo_path)
-      allow(File).to receive(:directory?).with("#{temp_repo_path}/.git").and_return(true)
+      setup_test_repo
 
-      # Mock git command to return main as default
-      allow(repo).to receive(:git_default_branch).and_return('main')
-
+      repo = described_class.new(expand_path('.'))
       expect(repo.default_branch).to eq('main')
     end
 
     it 'falls back to master if main does not exist' do
-      repo = described_class.new(temp_repo_path)
-      allow(File).to receive(:directory?).with("#{temp_repo_path}/.git").and_return(true)
+      # Create repo with master as default (older git behavior)
+      run_command('git init')
+      run_command('git config user.email "test@example.com"')
+      run_command('git config user.name "Test User"')
+      run_command('git checkout -b master')
+      write_file('README.md', '# Test')
+      run_command('git add README.md')
+      run_command('git commit -m "Initial commit"')
 
-      allow(repo).to receive(:git_default_branch).and_return('master')
-
+      repo = described_class.new(expand_path('.'))
       expect(repo.default_branch).to eq('master')
     end
   end
 
   describe '#branch_exists?' do
     it 'returns true for existing branch' do
-      repo = described_class.new(temp_repo_path)
-      allow(File).to receive(:directory?).with("#{temp_repo_path}/.git").and_return(true)
+      setup_test_repo
 
-      allow(repo).to receive(:git_branch_exists?).with('main').and_return(true)
-
+      repo = described_class.new(expand_path('.'))
       expect(repo.branch_exists?('main')).to be true
     end
 
     it 'returns false for non-existent branch' do
-      repo = described_class.new(temp_repo_path)
-      allow(File).to receive(:directory?).with("#{temp_repo_path}/.git").and_return(true)
+      setup_test_repo
 
-      allow(repo).to receive(:git_branch_exists?).with('nonexistent').and_return(false)
-
+      repo = described_class.new(expand_path('.'))
       expect(repo.branch_exists?('nonexistent')).to be false
     end
   end
 
   describe '#remote_url' do
     it 'returns origin URL when present' do
-      repo = described_class.new(temp_repo_path)
-      allow(File).to receive(:directory?).with("#{temp_repo_path}/.git").and_return(true)
+      setup_test_repo
+      setup_remote_repo
 
-      allow(repo).to receive(:git_remote_url).and_return('https://github.com/user/repo.git')
-
-      expect(repo.remote_url).to eq('https://github.com/user/repo.git')
+      repo = described_class.new(expand_path('.'))
+      expect(repo.remote_url).to include('./remote.git')
     end
 
     it 'returns nil when no remote exists' do
-      repo = described_class.new(temp_repo_path)
-      allow(File).to receive(:directory?).with("#{temp_repo_path}/.git").and_return(true)
+      setup_test_repo
 
-      allow(repo).to receive(:git_remote_url).and_return(nil)
-
+      repo = described_class.new(expand_path('.'))
       expect(repo.remote_url).to be_nil
     end
   end
 
   describe '#worktrees_path' do
     it 'returns configured worktrees directory' do
-      repo = described_class.new(temp_repo_path)
-      allow(File).to receive(:directory?).with("#{temp_repo_path}/.git").and_return(true)
+      setup_test_repo
 
-      config = instance_double('Worktrees::Models::WorktreeConfig')
-      allow(config).to receive(:worktrees_root).and_return('/home/user/.worktrees')
-      allow(repo).to receive(:config).and_return(config)
-
-      expect(repo.worktrees_path).to eq('/home/user/.worktrees')
+      repo = described_class.new(expand_path('.'))
+      # This will use default config which should return ~/.worktrees
+      expect(repo.worktrees_path).to match(/.worktrees$/)
     end
   end
 end

@@ -1,8 +1,31 @@
 # frozen_string_literal: true
 
 require 'worktrees'
+require 'support/git_helpers'
 
 RSpec.configure do |config|
+  config.include GitHelpers, type: :aruba
+
+  # Clean up before each test to ensure fresh state
+  config.before(:each, type: :aruba) do
+    cleanup_git_worktrees if respond_to?(:cleanup_git_worktrees)
+  end
+
+  # Clean up after each test to prevent interference
+  config.after(:each, type: :aruba) do
+    cleanup_git_worktrees if respond_to?(:cleanup_git_worktrees)
+  end
+
+  # Global cleanup for entire test suite
+  config.before(:suite) do
+    system("git worktree prune 2>/dev/null || true")
+    system("rm -rf tmp/ 2>/dev/null || true")
+  end
+
+  config.after(:suite) do
+    system("git worktree prune 2>/dev/null || true")
+    system("rm -rf tmp/ 2>/dev/null || true")
+  end
   # rspec-expectations config goes here
   config.expect_with :rspec do |c|
     c.syntax = :expect

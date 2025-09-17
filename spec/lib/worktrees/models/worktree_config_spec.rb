@@ -57,7 +57,8 @@ RSpec.describe Worktrees::Models::WorktreeConfig do
     it 'handles invalid YAML gracefully' do
       config_path = '/tmp/.worktrees/config.yml'
       allow(File).to receive(:exist?).with(config_path).and_return(true)
-      allow(YAML).to receive(:load_file).with(config_path).and_raise(Psych::SyntaxError.new(nil, nil, nil, nil, nil, nil))
+      syntax_error = Psych::SyntaxError.new("file.yml", 1, 1, 0, "invalid syntax", "context")
+      allow(YAML).to receive(:load_file).with(config_path).and_raise(syntax_error)
 
       expect { described_class.load(config_path) }
         .to raise_error(Worktrees::Error, /Invalid configuration file/)

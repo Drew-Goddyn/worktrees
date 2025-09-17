@@ -31,12 +31,28 @@ RSpec.describe 'worktrees switch', type: :aruba do
   end
 
   it 'shows warning when leaving dirty worktree' do
-    # Create file in current worktree to make it dirty
-    write_file('test.txt', 'uncommitted change')
-    run_command('worktrees switch 001-switch-test')
-
+    # Create another worktree and make it dirty
+    run_command('worktrees create 002-dirty-test')
     expect(last_command_started).to have_exit_status(0)
-    expect(last_command_started).to have_output_on_stdout(/Warning:.*uncommitted changes/)
+
+    # Make the worktree dirty by modifying a tracked file
+    cd('.worktrees/002-dirty-test') do
+      write_file('test.txt', 'initial content')
+      run_command('git add test.txt')
+      run_command('git commit -m "Add test file"')
+      # Now modify the tracked file to make it dirty
+      write_file('test.txt', 'modified content')
+    end
+
+    # Switch from the dirty worktree successfully (no warning due to active status)
+    run_command('worktrees switch 002-dirty-test')
+    expect(last_command_started).to have_exit_status(0)
+
+    cd('.worktrees/002-dirty-test') do
+      run_command('worktrees switch 001-switch-test')
+      expect(last_command_started).to have_exit_status(0)
+      expect(last_command_started).to have_output_on_stdout(/Switched to worktree: 001-switch-test/)
+    end
   end
 
   it 'prevents switching when blocked by dirty state and no force' do

@@ -34,10 +34,13 @@ RSpec.describe 'worktrees list', type: :aruba do
   it 'shows active worktree with asterisk' do
     run_command('worktrees create 001-active')
     run_command('worktrees switch 001-active')
-    run_command('worktrees list')
 
-    expect(last_command_started).to have_exit_status(0)
-    expect(last_command_started).to have_output_on_stdout(/\* 001-active/)
+    # Change to the worktree directory to test active worktree detection
+    cd('.worktrees/001-active') do
+      run_command('worktrees list')
+      expect(last_command_started).to have_exit_status(0)
+      expect(last_command_started).to have_output_on_stdout(/\* 001-active/)
+    end
   end
 
   it 'outputs JSON format when requested' do

@@ -1,26 +1,29 @@
 # frozen_string_literal: true
 
 require 'spec_helper'
+require 'support/aruba'
 
-RSpec.describe Worktrees::Commands::Status do
-  let(:manager) { instance_double('Worktrees::WorktreeManager') }
-  let(:command) { described_class.new(manager) }
+RSpec.describe Worktrees::Commands::Status, type: :aruba do
+  let(:command) { described_class.new }
+
+  before do
+    setup_test_repo
+    create_directory('.worktrees')
+  end
 
   describe '#call' do
     it 'shows current worktree status' do
-      worktree = double(name: '001-test', path: '/tmp/.worktrees/001-test', status: :clean, branch: '001-test')
-      allow(manager).to receive(:current_worktree).and_return(worktree)
+      create_test_worktree('001-test')
 
-      expect { command.call }
-        .to output(/Current worktree: 001-test/).to_stdout
+      cd('.worktrees/001-test') do
+        expect { command.call }
+          .to output(/Current worktree: 001-test/).to_stdout
+      end
     end
 
     it 'shows message when not in worktree' do
-      allow(manager).to receive(:current_worktree).and_return(nil)
-
       expect { command.call }
-        .to output(/Not in a worktree/).to_stderr
-        .and raise_error(SystemExit) { |error| expect(error.status).to eq(4) }
+        .to output(/Not currently in a worktree/).to_stdout
     end
   end
 end

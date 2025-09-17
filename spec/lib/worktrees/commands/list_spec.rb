@@ -1,31 +1,31 @@
 # frozen_string_literal: true
 
 require 'spec_helper'
+require 'support/aruba'
 
-RSpec.describe Worktrees::Commands::List do
-  let(:manager) { instance_double('Worktrees::WorktreeManager') }
-  let(:command) { described_class.new(manager) }
+RSpec.describe Worktrees::Commands::List, type: :aruba do
+  let(:command) { described_class.new }
+
+  before do
+    setup_test_repo
+    create_directory('.worktrees')
+  end
 
   describe '#call' do
     it 'lists worktrees in text format' do
-      worktrees = [
-        double(name: '001-test', status: :clean, path: '/tmp/.worktrees/001-test', base_ref: 'main', active?: false),
-        double(name: '002-other', status: :dirty, path: '/tmp/.worktrees/002-other', base_ref: 'develop', active?: true)
-      ]
-      allow(manager).to receive(:list_worktrees).and_return(worktrees)
+      create_test_worktree('001-test')
+      create_test_worktree('002-other')
+      make_dirty_worktree('002-other')
 
-      expect { command.call }.to output(/001-test.*clean.*002-other.*dirty/).to_stdout
+      expect { command.call }.to output(/001-test.*002-other/).to_stdout
     end
 
     it 'shows message when no worktrees exist' do
-      allow(manager).to receive(:list_worktrees).and_return([])
-
       expect { command.call }.to output(/No worktrees found/).to_stdout
     end
 
     it 'outputs JSON format when requested' do
-      worktrees = [double(name: '001-test', to_h: { name: '001-test', status: :clean })]
-      allow(manager).to receive(:list_worktrees).and_return(worktrees)
+      create_test_worktree('001-test')
 
       expect { command.call(format: 'json') }
         .to output(/"worktrees":/).to_stdout

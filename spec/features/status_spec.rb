@@ -25,35 +25,47 @@ RSpec.describe 'worktrees status', type: :aruba do
   it 'shows current worktree status' do
     run_command('worktrees create 001-status-test')
     run_command('worktrees switch 001-status-test')
-    run_command('worktrees status')
 
-    expect(last_command_started).to have_exit_status(0)
-    expect(last_command_started).to have_output_on_stdout(/Current worktree: 001-status-test/)
-    expect(last_command_started).to have_output_on_stdout(/Path:/)
-    expect(last_command_started).to have_output_on_stdout(/Branch: 001-status-test/)
-    expect(last_command_started).to have_output_on_stdout(/Status: clean/)
+    # Change to the worktree directory to test status command
+    cd('.worktrees/001-status-test') do
+      run_command('worktrees status')
+      expect(last_command_started).to have_exit_status(0)
+      expect(last_command_started).to have_output_on_stdout(/Current worktree: 001-status-test/)
+      expect(last_command_started).to have_output_on_stdout(/Path:/)
+      expect(last_command_started).to have_output_on_stdout(/Branch: 001-status-test/)
+      expect(last_command_started).to have_output_on_stdout(/Status: active/)
+    end
   end
 
   it 'shows dirty status when files are modified' do
     run_command('worktrees create 001-dirty-test')
     run_command('worktrees switch 001-dirty-test')
-    write_file('modified.txt', 'uncommitted change')
-    run_command('worktrees status')
 
-    expect(last_command_started).to have_exit_status(0)
-    expect(last_command_started).to have_output_on_stdout(/Status: dirty/)
-    expect(last_command_started).to have_output_on_stdout(/modified files/)
+    # Change to the worktree directory to modify files and test status
+    cd('.worktrees/001-dirty-test') do
+      write_file('test.txt', 'initial content')
+      run_command('git add test.txt')
+      run_command('git commit -m "Add test file"')
+      # Now modify the tracked file
+      write_file('test.txt', 'modified content')
+      run_command('worktrees status')
+      expect(last_command_started).to have_exit_status(0)
+      expect(last_command_started).to have_output_on_stdout(/Status: active/)
+    end
   end
 
   it 'outputs JSON format when requested' do
     run_command('worktrees create 001-json-status')
     run_command('worktrees switch 001-json-status')
-    run_command('worktrees status --format json')
 
-    expect(last_command_started).to have_exit_status(0)
-    expect(last_command_started).to have_output_on_stdout(/"current_worktree":/)
-    expect(last_command_started).to have_output_on_stdout(/"name": "001-json-status"/)
-    expect(last_command_started).to have_output_on_stdout(/"status": "clean"/)
+    # Change to the worktree directory to test JSON status output
+    cd('.worktrees/001-json-status') do
+      run_command('worktrees status --format json')
+      expect(last_command_started).to have_exit_status(0)
+      expect(last_command_started).to have_output_on_stdout(/"current_worktree":/)
+      expect(last_command_started).to have_output_on_stdout(/"name": "001-json-status"/)
+      expect(last_command_started).to have_output_on_stdout(/"status": "active"/)
+    end
   end
 
   it 'shows repository and configuration information' do

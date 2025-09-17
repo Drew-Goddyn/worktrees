@@ -131,7 +131,7 @@ module Worktrees
 
     def remove_worktree(name, options = {})
       worktree = find_worktree(name)
-      raise ValidationError, "Worktree '#{name}' not found" unless worktree
+      raise NotFoundError, "Worktree '#{name}' not found" unless worktree
 
       # Safety checks
       if worktree.active?

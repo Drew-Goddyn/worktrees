@@ -23,4 +23,5 @@ module Worktrees
   class GitError < Error; end
   class StateError < Error; end
   class FileSystemError < Error; end
+  class NotFoundError < Error; end
 end

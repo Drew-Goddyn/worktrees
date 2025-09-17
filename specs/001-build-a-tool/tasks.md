@@ -197,11 +197,13 @@ Task: "Implement /Users/drewgoddyn/projects/claude-worktrees/src/models/list_que
 ## Validation Checklist
 *GATE: Checked by main() before returning*
 
-- [ ] All contracts have corresponding tests (cli-contracts.md, openapi.yaml)
-- [ ] All entities have model tasks (Repository, FeatureName, Worktree, ListQuery)
-- [ ] All tests come before implementation
-- [ ] Parallel tasks truly independent
-- [ ] Each task specifies exact file path
-- [ ] No task modifies same file as another [P] task
+- [x] All contracts have corresponding tests (cli-contracts.md, openapi.yaml)
+- [x] All entities have model tasks (Repository, FeatureName, Worktree, ListQuery)
+- [x] All tests come before implementation
+- [x] Parallel tasks truly independent
+- [x] Each task specifies exact file path
+- [x] No task modifies same file as another [P] task
+
+**Validation Status**: ✅ PASSED - All spec-kit gates completed
 
 
