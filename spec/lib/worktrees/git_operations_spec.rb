@@ -2,6 +2,7 @@
 
 require 'spec_helper'
 require 'support/aruba'
+require 'fileutils'
 
 RSpec.describe Worktrees::GitOperations, type: :aruba do
   describe '.create_worktree' do
@@ -63,11 +64,17 @@ RSpec.describe Worktrees::GitOperations, type: :aruba do
     end
 
     it 'handles git command failure gracefully' do
-      # Move to non-git directory to cause failure
-      create_directory('non-git')
-      cd('non-git') do
+      # Create a truly isolated non-git directory outside any git repository
+      non_git_dir = Dir.mktmpdir('non-git-test')
+      begin
+        original_dir = Dir.pwd
+        Dir.chdir(non_git_dir)
+
         expect { described_class.list_worktrees }
           .to raise_error(Worktrees::GitError, /Failed to list worktrees/)
+      ensure
+        Dir.chdir(original_dir)
+        FileUtils.rm_rf(non_git_dir)
       end
     end
   end

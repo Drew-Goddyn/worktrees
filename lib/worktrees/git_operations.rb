@@ -44,9 +44,16 @@ module Worktrees
       end
 
       def is_clean?(worktree_path)
-        # git diff-index --quiet returns 0 if clean, 1 if dirty
-        # We want to return true if clean, false if dirty
-        system('git', 'diff-index', '--quiet', 'HEAD', chdir: worktree_path)
+        # Check for both modified tracked files and untracked files
+        # git diff-index --quiet returns 0 if clean, 1 if dirty (for tracked files)
+        tracked_clean = system('git', 'diff-index', '--quiet', 'HEAD', chdir: worktree_path)
+
+        # git ls-files --others --exclude-standard shows untracked files
+        untracked_output = `cd "#{worktree_path}" && git ls-files --others --exclude-standard`
+        has_untracked = $CHILD_STATUS.success? && !untracked_output.strip.empty?
+
+        # Repository is clean if tracked files are clean AND no untracked files
+        tracked_clean && !has_untracked
       end
 
       def has_unpushed_commits?(_branch_name)
