@@ -27,7 +27,7 @@
 
 ## Installation
 
-### From RubyGems (when published)
+### From RubyGems
 ```bash
 gem install worktrees
 ```
