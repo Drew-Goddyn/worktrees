@@ -77,8 +77,6 @@ module CIEnvironment
       artifacts_dir
     end
 
-    private
-
     def detect_ci_platform
       return 'GitHub Actions' if ENV['GITHUB_ACTIONS']
       return 'Buildkite' if ENV['BUILDKITE']
@@ -86,6 +84,8 @@ module CIEnvironment
       return 'CircleCI' if ENV['CIRCLECI']
       'Unknown CI'
     end
+
+    private
 
     def configure_timeouts
       # Increase timeouts for CI environment
