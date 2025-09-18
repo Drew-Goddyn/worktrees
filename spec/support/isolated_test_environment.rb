@@ -107,7 +107,7 @@ module IsolatedTestEnvironment
     # Set up environment for isolated testing
     ENV['WORKTREES_TEST_MODE'] = 'isolated'
     ENV['WORKTREES_TEST_ID'] = @test_id
-    ENV['HOME'] = @test_root
+    # HOME will be set by the test isolation system
   end
 
   def ensure_in_isolated_environment!

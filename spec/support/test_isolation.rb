@@ -60,6 +60,9 @@ module TestIsolation
       # Setup git configuration
       setup_git_environment
 
+      # Initialize the workspace as a git repository for tests that need it
+      initialize_workspace_git_repository
+
       @setup_complete = true
     end
 
@@ -153,6 +156,27 @@ module TestIsolation
     end
 
     private
+
+    def initialize_workspace_git_repository
+      # Initialize the workspace itself as a git repository
+      Dir.chdir(@workspace_path) do
+        # Initialize git with consistent configuration
+        system('git', 'init')
+        system('git', 'config', 'user.email', 'test@example.com')
+        system('git', 'config', 'user.name', 'Test User')
+        system('git', 'config', 'init.defaultBranch', 'main')
+
+        # Create initial commit to establish main branch
+        File.write('README.md', "# Test Repository #{@test_id}")
+        system('git', 'add', 'README.md')
+        system('git', 'commit', '-m', 'Initial commit')
+
+        # Ensure we're on main branch
+        system('git', 'checkout', '-B', 'main')
+      end
+
+      add_cleanup_callback { cleanup_git_repository(@workspace_path) }
+    end
 
     def create_workspace_structure
       @workspace_path = File.join(@test_root, 'workspace')

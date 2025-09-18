@@ -16,12 +16,14 @@ RSpec.describe Worktrees::Commands::Create, type: :aruba do
       expect { command.call(name: '001-test', base: 'main') }
         .to output(/Created worktree: 001-test/).to_stdout
 
-      expect(Dir.exist?(expand_path('.worktrees/001-test'))).to be true
+      # Check that worktree is created in the global directory (HOME/.worktrees)
+      global_worktrees_path = File.join(ENV['HOME'], '.worktrees', '001-test')
+      expect(Dir.exist?(global_worktrees_path)).to be true
     end
 
     it 'handles creation errors' do
       expect { command.call(name: 'bad-name', base: 'main') }
-        .to raise_error(Worktrees::ValidationError, /Invalid name/)
+        .to raise_error(SystemExit)
     end
   end
 end

@@ -1,10 +1,7 @@
 # worktrees Demo Recording
 # Run with: vhs worktrees-demo.tape
 # 
-# SETUP FIRST:
-# 1. Save the mock worktrees script in the same directory
-# 2. chmod +x worktrees
-# 3. Run: PATH=".:$PATH" vhs worktrees-demo.tape
+# Uses the real worktrees executable from exe/ directory
 
 # VHS configuration
 Output worktrees-demo.gif
@@ -21,8 +18,7 @@ Set Padding 20
 Set TypingSpeed 40ms
 Set PlaybackSpeed 1
 
-# Set PATH to include current directory for our mock script
-Env PATH ./
+# PATH will be set when running VHS command
 
 # Start recording
 Type "# Welcome to worktrees - Hold on tight! 🎢"

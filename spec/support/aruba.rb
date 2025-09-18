@@ -15,14 +15,15 @@ RSpec.configure do |config|
       # Set up Aruba within the isolated context
       setup_aruba
 
-      # Set Aruba to work within our isolated environment
-      # Aruba expects relative paths, so we'll cd to the workspace instead
-      Dir.chdir(isolation_context.workspace_path)
-
-      # Set environment variables for the isolated context
+      # Set environment variables for the isolated context BEFORE setting working directory
       isolation_context.environment_variables.each do |key, value|
         set_environment_variable(key, value)
+        # Also set in Ruby ENV to ensure it sticks
+        ENV[key] = value
       end
+
+      # Set Aruba to use our isolated workspace as its working directory
+      cd(isolation_context.workspace_path)
 
       begin
         example.run
@@ -33,15 +34,19 @@ RSpec.configure do |config|
     end
   end
 
-  # Legacy cleanup for non-aruba tests
+  # Legacy cleanup for non-aruba tests that explicitly use git
   config.before(:each) do |example|
     next if example.metadata[:type] == :aruba
+    # Only run git cleanup for tests that are actually testing git functionality
+    next unless example.metadata[:git] == true
 
     cleanup_git_worktrees if respond_to?(:cleanup_git_worktrees)
   end
 
   config.after(:each) do |example|
     next if example.metadata[:type] == :aruba
+    # Only run git cleanup for tests that are actually testing git functionality
+    next unless example.metadata[:git] == true
 
     cleanup_git_worktrees if respond_to?(:cleanup_git_worktrees)
   end

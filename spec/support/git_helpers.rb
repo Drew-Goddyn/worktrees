@@ -10,13 +10,19 @@ module GitHelpers
 
   def setup_test_repo
     cleanup_git_worktrees
-    run_command('git init')
-    run_command('git config user.email "test@example.com"')
-    run_command('git config user.name "Test User"')
-    run_command('git config init.defaultBranch main')
-    write_file('README.md', '# Test Repository')
+
+    # Only initialize git if not already in a git repository
+    unless Dir.exist?('.git')
+      run_command('git init')
+      run_command('git config user.email "test@example.com"')
+      run_command('git config user.name "Test User"')
+      run_command('git config init.defaultBranch main')
+    end
+
+    # Set up initial content and commit (safe even if repo exists)
+    write_file('README.md', '# Test Repository') unless File.exist?('README.md')
     run_command('git add README.md')
-    run_command('git commit -m "Initial commit"')
+    run_command('git commit -m "Initial commit"', fail_on_error: false)
     # Ensure we're on main branch after first commit
     run_command('git branch -M main', fail_on_error: false)
   end
