@@ -17,14 +17,10 @@ module Worktrees
 
       def list_worktrees
         output = `git worktree list --porcelain 2>&1`
-        unless $CHILD_STATUS.success?
-          raise GitError, 'Failed to list worktrees: git command failed'
-        end
+        raise GitError, 'Failed to list worktrees: git command failed' unless $CHILD_STATUS.success?
 
         # Additional check - if not in a git repo, the output will contain error messages
-        if output.include?('not a git repository') || output.include?('fatal:')
-          raise GitError, 'Failed to list worktrees: not in a git repository'
-        end
+        raise GitError, 'Failed to list worktrees: not in a git repository' if output.include?('not a git repository') || output.include?('fatal:')
 
         parse_worktree_list(output)
       rescue StandardError => e

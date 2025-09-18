@@ -1,12 +1,13 @@
 AllCops:
   NewCops: enable
+  SuggestExtensions: false
 
 # Relax metrics for CLI tool - focus on functionality over strict metrics
 Metrics/MethodLength:
-  Max: 25
+  Max: 35
 
 Metrics/AbcSize:
-  Max: 30
+  Max: 35
 
 Metrics/CyclomaticComplexity:
   Max: 12
@@ -18,14 +19,25 @@ Metrics/ParameterLists:
   Max: 8
 
 Metrics/ClassLength:
-  Max: 150
+  Max: 200
+
+Metrics/ModuleLength:
+  Max: 200
+
+# Allow longer blocks in specs - they're descriptive test suites
+Metrics/BlockLength:
+  Enabled: false
 
 # Disable documentation requirement - this is a CLI tool with clear naming
 Style/Documentation:
   Enabled: false
 
-# Allow predicate method naming patterns common in Ruby
+# Allow predicate method naming patterns common in Ruby - validate_name is fine
 Naming/PredicatePrefix:
+  Enabled: false
+
+# Allow methods that don't end with ? - validate_name, remove_worktree etc make sense
+Naming/PredicateMethod:
   Enabled: false
 
 # Allow boolean parameters for CLI options - they're clear in context
@@ -34,4 +46,16 @@ Style/OptionalBooleanParameter:
 
 # Format strings are fine for CLI output - annotated tokens add noise
 Style/FormatStringToken:
+  Enabled: false
+
+# Allow unused method arguments with underscore prefix
+Lint/UnusedMethodArgument:
+  AllowUnusedKeywordArguments: true
+
+# Be more lenient with line length for CLI tools
+Layout/LineLength:
+  Max: 150
+
+# Allow development dependencies in gemspec for published gems
+Gemspec/DevelopmentDependencies:
   Enabled: false
