@@ -2,30 +2,65 @@
 
 require 'worktrees'
 require 'support/git_helpers'
+require 'support/ci_environment'
+
+def safe_global_cleanup
+  original_dir = Dir.pwd
+
+  begin
+    # Clean up any leftover temporary directories
+    if Dir.exist?('tmp')
+      system("rm -rf tmp/ 2>/dev/null")
+    end
+
+    # Global git worktree cleanup
+    system("git worktree prune 2>/dev/null") if File.exist?('.git')
+
+  rescue => e
+    warn "Warning: Global cleanup failed: #{e.message}"
+  ensure
+    # Ensure we're in a safe directory
+    Dir.chdir(original_dir) if Dir.exist?(original_dir)
+  end
+end
 
 RSpec.configure do |config|
-  config.include GitHelpers, type: :aruba
+  config.include GitHelpers
 
-  # Clean up before each test to ensure fresh state
-  config.before(:each, type: :aruba) do
-    cleanup_git_worktrees if respond_to?(:cleanup_git_worktrees)
-  end
-
-  # Clean up after each test to prevent interference
-  config.after(:each, type: :aruba) do
-    cleanup_git_worktrees if respond_to?(:cleanup_git_worktrees)
-  end
-
-  # Global cleanup for entire test suite
+  # Enable CI debugging if in CI environment
   config.before(:suite) do
-    system("git worktree prune 2>/dev/null || true")
-    system("rm -rf tmp/ 2>/dev/null || true")
+    if CIEnvironment.ci_environment?
+      puts "Running tests in CI environment: #{CIEnvironment.detect_ci_platform}"
+      CIEnvironment.debug_environment if ENV['DEBUG']
+    end
+
+    # Global cleanup for entire test suite
+    safe_global_cleanup
   end
 
   config.after(:suite) do
-    system("git worktree prune 2>/dev/null || true")
-    system("rm -rf tmp/ 2>/dev/null || true")
+    # Final cleanup
+    safe_global_cleanup
+    puts "\nTest suite completed in CI environment" if CIEnvironment.ci_environment?
   end
+
+  # Test error handling with CI-specific reporting
+  config.around(:each) do |example|
+    begin
+      CIEnvironment.with_enhanced_error_handling { example.run }
+    rescue => e
+      # Enhanced error reporting for CI
+      if CIEnvironment.ci_environment? && ENV['DEBUG']
+        puts "\n=== Test Failure Debug Information ==="
+        puts "Test: #{example.full_description}"
+        puts "Error: #{e.class}: #{e.message}"
+        puts "Current Directory: #{Dir.pwd rescue 'unknown'}"
+        puts "Working Directory Exists: #{Dir.exist?(Dir.pwd) rescue false}"
+      end
+      raise e
+    end
+  end
+
   # rspec-expectations config goes here
   config.expect_with :rspec do |c|
     c.syntax = :expect
