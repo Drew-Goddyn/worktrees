@@ -6,7 +6,7 @@ Gem::Specification.new do |spec|
   spec.name = 'worktrees'
   spec.version = Worktrees::VERSION
   spec.authors = ['Drew Goddyn']
-  spec.email = ['drew@example.com']
+  spec.email = ['drgoddyn@gmail.com']
 
   spec.summary = 'Manage Git worktrees for feature-based development'
   spec.description = 'A CLI tool to create, list, switch between, and remove Git feature worktrees with safety checks and naming conventions'
