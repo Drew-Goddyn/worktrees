@@ -6,7 +6,7 @@ require 'pathname'
 module Worktrees
   module Models
     class WorktreeConfig
-      DEFAULT_ROOT = '~/.worktrees'
+      DEFAULT_ROOT = '.worktrees'
       NAME_PATTERN = /^[0-9]{3}-[a-z0-9-]{1,40}$/
       RESERVED_NAMES = %w[main master].freeze
 
@@ -38,7 +38,7 @@ module Worktrees
       end
 
       def self.default_config_path
-        File.join(Dir.home, '.worktrees', 'config.yml')
+        File.join(home_directory, '.worktrees', 'config.yml')
       end
 
       def valid_name?(name)
@@ -54,7 +54,11 @@ module Worktrees
       end
 
       def expand_worktrees_root
-        File.expand_path(@worktrees_root)
+        if @worktrees_root.start_with?('~')
+          @worktrees_root.sub('~', home_directory)
+        else
+          File.expand_path(@worktrees_root)
+        end
       end
 
       def to_h
@@ -64,6 +68,17 @@ module Worktrees
           force_cleanup: @force_cleanup,
           name_pattern: @name_pattern.source
         }
+      end
+
+      private
+
+      def home_directory
+        self.class.home_directory
+      end
+
+      def self.home_directory
+        # Respect HOME environment variable for test isolation
+        ENV['HOME'] || Dir.home
       end
     end
   end
