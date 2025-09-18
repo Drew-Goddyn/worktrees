@@ -34,6 +34,9 @@ RSpec.describe Worktrees::Models::Repository, type: :aruba do
       run_command('git init')
       run_command('git config user.email "test@example.com"')
       run_command('git config user.name "Test User"')
+      # Override the default branch config for this test only
+      run_command('git config init.defaultBranch master')
+      run_command('git config advice.defaultBranchName false')
       run_command('git checkout -b master')
       write_file('README.md', '# Test')
       run_command('git add README.md')

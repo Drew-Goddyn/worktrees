@@ -125,7 +125,7 @@ module CIEnvironment
 
       RSpec.configure do |config|
         config.after(:each) do |example|
-          collect_failure_artifacts(example.full_description, example.exception) if example.exception && CIEnvironment.ci_environment?
+          CIEnvironment.collect_failure_artifacts(example.full_description, example.exception) if example.exception && CIEnvironment.ci_environment?
         end
       end
     end
