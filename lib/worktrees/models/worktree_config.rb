@@ -76,9 +76,11 @@ module Worktrees
         self.class.home_directory
       end
 
-      def self.home_directory
+      private_class_method def self.home_directory
         # Respect HOME environment variable for test isolation
+        # rubocop:disable Style/EnvHome
         ENV['HOME'] || Dir.home
+        # rubocop:enable Style/EnvHome
       end
     end
   end

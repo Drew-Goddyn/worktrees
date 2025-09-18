@@ -42,6 +42,9 @@ RSpec.describe Worktrees::Models::Repository, type: :aruba do
       run_command('git add README.md')
       run_command('git commit -m "Initial commit"')
 
+      # Ensure main branch does not exist by deleting it if it was created
+      run_command('git branch -D main 2>/dev/null || true')
+
       repo = described_class.new(expand_path('.'))
       expect(repo.default_branch).to eq('master')
     end

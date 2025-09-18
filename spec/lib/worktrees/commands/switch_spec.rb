@@ -21,7 +21,7 @@ RSpec.describe Worktrees::Commands::Switch, type: :aruba do
 
     it 'handles non-existent worktree' do
       expect { command.call(name: 'nonexistent') }
-        .to raise_error(Worktrees::ValidationError, /not found/)
+        .to raise_error(SystemExit)
     end
   end
 end

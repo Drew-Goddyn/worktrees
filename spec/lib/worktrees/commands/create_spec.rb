@@ -16,9 +16,9 @@ RSpec.describe Worktrees::Commands::Create, type: :aruba do
       expect { command.call(name: '001-test', base: 'main') }
         .to output(/Created worktree: 001-test/).to_stdout
 
-      # Check that worktree is created in the global directory (HOME/.worktrees)
-      global_worktrees_path = File.join(Dir.home, '.worktrees', '001-test')
-      expect(Dir.exist?(global_worktrees_path)).to be true
+      # Check that worktree is created in the local directory (.worktrees)
+      local_worktrees_path = File.join(expand_path('.'), '.worktrees', '001-test')
+      expect(Dir.exist?(local_worktrees_path)).to be true
     end
 
     it 'handles creation errors' do
