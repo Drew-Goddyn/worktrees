@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>worktrees - UNDER CONSTRUCTION 🚧</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Comic+Neue:wght@400;700&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32"><text y="20" font-size="20">🔨</text></svg>'), auto;
+        }
+
+        body {
+            font-family: 'Comic Neue', 'Comic Sans MS', cursive;
+            background: repeating-linear-gradient(
+                45deg,
+                #ffff00,
+                #ffff00 10px,
+                #000000 10px,
+                #000000 20px
+            );
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><text x="10" y="50" font-size="60" opacity="0.1" transform="rotate(-45 50 50)">⚠️</text></svg>');
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .main-container {
+            background: linear-gradient(135deg, #f0f0f0 0%, #d0d0d0 100%);
+            max-width: 1000px;
+            margin: 2rem auto;
+            padding: 2rem;
+            border: 5px dashed #ff0000;
+            position: relative;
+            z-index: 10;
+            box-shadow: 10px 10px 0 rgba(0,0,0,0.3);
+            transform: rotate(-0.5deg);
+        }
+
+        .duct-tape {
+            position: absolute;
+            background: rgba(192, 192, 192, 0.9);
+            transform: rotate(45deg);
+            width: 200px;
+            height: 50px;
+            top: -25px;
+            right: 100px;
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.3);
+            z-index: 20;
+        }
+
+        .duct-tape::after {
+            content: "DUCT TAPE";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-45deg);
+            font-size: 12px;
+            color: #666;
+            font-weight: bold;
+        }
+
+        h1 {
+            font-size: 4rem;
+            text-align: center;
+            color: #ff0000;
+            text-shadow: 3px 3px 0 #ffff00, 6px 6px 10px rgba(0,0,0,0.5);
+            animation: shake 2s infinite;
+            margin-bottom: 1rem;
+            transform: rotate(1deg);
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: rotate(1deg) translateX(0); }
+            25% { transform: rotate(1.5deg) translateX(-2px); }
+            75% { transform: rotate(0.5deg) translateX(2px); }
+        }
+
+        .warning-banner {
+            background: #ff0000;
+            color: #ffff00;
+            padding: 1rem;
+            text-align: center;
+            margin: 1rem 0;
+            font-weight: bold;
+            font-size: 1.2rem;
+            border: 3px solid #000;
+            animation: blink 1s infinite;
+            transform: rotate(-0.2deg);
+        }
+
+        @keyframes blink {
+            0%, 50%, 100% { opacity: 1; }
+            25%, 75% { opacity: 0.7; }
+        }
+
+        .construction-gif {
+            text-align: center;
+            margin: 2rem 0;
+        }
+
+        .hand-drawn-tree {
+            margin: 2rem auto;
+            display: block;
+            background: white;
+            border: 3px solid #000;
+            box-shadow: 5px 5px 0 rgba(0,0,0,0.3);
+            transform: rotate(0.5deg);
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin: 3rem 0;
+        }
+
+        .feature-card {
+            background: #fffacd;
+            border: 3px solid #000;
+            padding: 1.5rem;
+            position: relative;
+            transform: rotate(var(--rotation, 1deg));
+            box-shadow: 5px 5px 0 rgba(0,0,0,0.2);
+            transition: transform 0.3s;
+        }
+
+        .feature-card:hover {
+            transform: rotate(calc(var(--rotation, 1deg) * -1)) scale(1.05);
+        }
+
+        .feature-card h3 {
+            color: #ff0000;
+            margin-bottom: 0.5rem;
+            font-size: 1.3rem;
+        }
+
+        .sticky-note {
+            background: #ffff99;
+            padding: 1rem;
+            margin: 1rem 0;
+            border: 2px solid #ffcc00;
+            transform: rotate(-2deg);
+            box-shadow: 3px 3px 5px rgba(0,0,0,0.2);
+            position: relative;
+        }
+
+        .sticky-note::before {
+            content: "📌";
+            position: absolute;
+            top: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 1.5rem;
+        }
+
+        .code-block {
+            background: #000;
+            color: #00ff00;
+            padding: 1rem;
+            font-family: 'Courier New', monospace;
+            border: 3px solid #00ff00;
+            margin: 1rem 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .code-block::before {
+            content: "PROBABLY WORKS";
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            color: #00ff00;
+            font-size: 10px;
+            opacity: 0.5;
+            animation: flicker 3s infinite;
+        }
+
+        @keyframes flicker {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 0.1; }
+        }
+
+        .badge {
+            display: inline-block;
+            background: #ffff00;
+            color: #000;
+            padding: 0.5rem 1rem;
+            margin: 0.5rem;
+            border: 2px solid #000;
+            transform: rotate(var(--badge-rotate, -2deg));
+            font-weight: bold;
+            box-shadow: 3px 3px 0 rgba(0,0,0,0.3);
+        }
+
+        .under-construction-tape {
+            background: repeating-linear-gradient(
+                -45deg,
+                #ff0000,
+                #ff0000 20px,
+                #ffffff 20px,
+                #ffffff 40px
+            );
+            height: 50px;
+            margin: 2rem -2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #000;
+            text-shadow: 2px 2px 0 #fff;
+            border-top: 3px solid #000;
+            border-bottom: 3px solid #000;
+        }
+
+        .sparkles {
+            position: fixed;
+            pointer-events: none;
+            z-index: 1000;
+        }
+
+        .sparkle {
+            position: absolute;
+            font-size: 20px;
+            animation: sparkle 2s infinite;
+        }
+
+        @keyframes sparkle {
+            0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(-100px) rotate(360deg); opacity: 0; }
+        }
+
+        .coffee-stain {
+            position: absolute;
+            width: 100px;
+            height: 100px;
+            background: radial-gradient(ellipse at center, 
+                rgba(139,69,19,0.3) 0%,
+                rgba(139,69,19,0.2) 40%,
+                rgba(139,69,19,0.1) 70%,
+                transparent 100%);
+            border-radius: 50%;
+            top: 200px;
+            right: 50px;
+            transform: rotate(25deg) skew(10deg);
+            z-index: 5;
+        }
+
+        .broken-image {
+            display: inline-block;
+            width: 32px;
+            height: 32px;
+            background: #f0f0f0;
+            border: 2px solid #ccc;
+            position: relative;
+            margin: 0 0.5rem;
+        }
+
+        .broken-image::before,
+        .broken-image::after {
+            content: "";
+            position: absolute;
+            background: #ccc;
+        }
+
+        .broken-image::before {
+            width: 100%;
+            height: 2px;
+            top: 50%;
+            transform: rotate(45deg);
+        }
+
+        .broken-image::after {
+            width: 100%;
+            height: 2px;
+            top: 50%;
+            transform: rotate(-45deg);
+        }
+
+        footer {
+            text-align: center;
+            padding: 2rem;
+            background: #333;
+            color: #0f0;
+            font-family: monospace;
+            margin-top: 4rem;
+            border: 3px solid #0f0;
+        }
+
+        .visitor-counter {
+            background: #000;
+            color: #0f0;
+            padding: 0.5rem 1rem;
+            display: inline-block;
+            font-family: monospace;
+            border: 2px solid #0f0;
+            margin-top: 1rem;
+        }
+
+        .spinning-logo {
+            animation: spin 4s linear infinite;
+            display: inline-block;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Random sparkles -->
+    <div class="sparkles" id="sparkles"></div>
+
+    <div class="main-container">
+        <div class="duct-tape"></div>
+        <div class="coffee-stain"></div>
+        
+        <div class="warning-banner">
+            ⚠️ WARNING: THIS SOFTWARE IS HELD TOGETHER BY HOPE AND DUCT TAPE ⚠️
+        </div>
+
+        <h1>
+            <span class="spinning-logo">🌳</span> worktrees <span class="spinning-logo">🔧</span>
+        </h1>
+
+        <div class="sticky-note">
+            <strong>TODO:</strong> Make this actually work<br>
+            <strong>TODO:</strong> Fix that thing that breaks everything<br>
+            <strong>TODO:</strong> Remember what this was supposed to do<br>
+            <s>TODO: Add more TODOs</s> ✓ DONE!
+        </div>
+
+        <div class="construction-gif" style="text-align: center; font-size: 3rem;">
+            🚧👷‍♂️🚧👷‍♀️🚧
+        </div>
+
+        <!-- Hand-drawn tree SVG -->
+        <svg class="hand-drawn-tree" width="400" height="300" viewBox="0 0 400 300">
+            <!-- Toddler-style tree -->
+            <path d="M 200 250 L 195 180 L 202 120 L 198 80" 
+                  stroke="#8B4513" stroke-width="8" fill="none" 
+                  stroke-linecap="round" stroke-linejoin="round"/>
+            
+            <!-- Wobbly branches -->
+            <path d="M 195 180 Q 150 160 120 140" 
+                  stroke="#8B4513" stroke-width="5" fill="none" 
+                  stroke-linecap="round"/>
+            <path d="M 202 120 Q 250 100 280 95" 
+                  stroke="#8B4513" stroke-width="5" fill="none" 
+                  stroke-linecap="round"/>
+            <path d="M 198 150 Q 160 130 130 120" 
+                  stroke="#8B4513" stroke-width="4" fill="none" 
+                  stroke-linecap="round"/>
+            <path d="M 200 140 Q 240 125 270 115" 
+                  stroke="#8B4513" stroke-width="4" fill="none" 
+                  stroke-linecap="round"/>
+            
+            <!-- Messy leaves (circles drawn by a toddler) -->
+            <circle cx="120" cy="140" r="25" fill="#90EE90" stroke="#228B22" stroke-width="3" opacity="0.8"/>
+            <circle cx="280" cy="95" r="30" fill="#98FB98" stroke="#228B22" stroke-width="3" opacity="0.8"/>
+            <circle cx="130" cy="120" r="20" fill="#90EE90" stroke="#228B22" stroke-width="3" opacity="0.8"/>
+            <circle cx="270" cy="115" r="22" fill="#98FB98" stroke="#228B22" stroke-width="3" opacity="0.8"/>
+            <circle cx="200" cy="80" r="35" fill="#90EE90" stroke="#228B22" stroke-width="3" opacity="0.8"/>
+            
+            <!-- Wonky roots -->
+            <path d="M 200 250 Q 180 270 160 280" 
+                  stroke="#8B4513" stroke-width="4" fill="none" 
+                  stroke-linecap="round" opacity="0.6"/>
+            <path d="M 200 250 Q 220 270 240 285" 
+                  stroke="#8B4513" stroke-width="4" fill="none" 
+                  stroke-linecap="round" opacity="0.6"/>
+            
+            <!-- Child's signature -->
+            <text x="20" y="290" font-family="Comic Sans MS" font-size="14" fill="#666">
+                by timmy, age 5
+            </text>
+            
+            <!-- Random scribbles for "grass" -->
+            <path d="M 50 260 Q 60 255 70 260 Q 80 255 90 260 Q 100 255 110 260" 
+                  stroke="#228B22" stroke-width="2" fill="none" opacity="0.5"/>
+            <path d="M 290 260 Q 300 255 310 260 Q 320 255 330 260 Q 340 255 350 260" 
+                  stroke="#228B22" stroke-width="2" fill="none" opacity="0.5"/>
+        </svg>
+
+        <div class="under-construction-tape">
+            🚧 UNDER CONSTRUCTION SINCE 2024 🚧
+        </div>
+
+        <div style="text-align: center; margin: 2rem 0;">
+            <div class="badge" style="--badge-rotate: -3deg;">💎 Version 0.9.2.1.alpha.rc2.FINAL(2)</div>
+            <div class="badge" style="--badge-rotate: 2deg;">🎲 Success Rate: Yes</div>
+            <div class="badge" style="--badge-rotate: -1deg;">🔥 Only 3 Fires This Week!</div>
+            <div class="badge" style="--badge-rotate: 1.5deg;">☕ Powered by Coffee</div>
+        </div>
+
+        <div class="sticky-note" style="transform: rotate(2deg); margin: 2rem auto; max-width: 600px;">
+            <h2 style="color: #ff0000; text-decoration: underline wavy;">What is worktrees???</h2>
+            <p style="margin-top: 1rem;">
+                It's like Git worktrees but with MORE RULES and LESS FLEXIBILITY! 
+                We enforce naming conventions because CHAOS IS NOT AN OPTION*
+            </p>
+            <p style="font-size: 0.8rem; margin-top: 0.5rem;">
+                *Chaos is actually very much an option and likely outcome
+            </p>
+        </div>
+
+        <h2 style="text-align: center; color: #ff0000; margin: 2rem 0; transform: rotate(-1deg);">
+            ✨ FEATURES ✨<br>
+            <span style="font-size: 0.8rem;">(Results Not Guaranteed)</span>
+        </h2>
+
+        <div class="features">
+            <div class="feature-card" style="--rotation: -2deg;">
+                <h3>🔒 Data "Safety"</h3>
+                <p>Your work is protected by our proprietary "cross-fingers" technology. We've only lost data twice this month!</p>
+                <div class="broken-image"></div>
+                <small>*Insurance not included</small>
+            </div>
+
+            <div class="feature-card" style="--rotation: 1.5deg;">
+                <h3>🧨 Explosive Performance</h3>
+                <p>So fast it might actually break something! Switches branches quicker than you can say "git checkout oh wait that's deprecated"</p>
+                <marquee>ZOOM ZOOM</marquee>
+            </div>
+
+            <div class="feature-card" style="--rotation: -1deg;">
+                <h3>📐 Naming Police</h3>
+                <p>NNN-kebab-case OR DEATH! We'll reject your branch names faster than your code reviews!</p>
+                <blink style="color: red;">COMPLIANCE MANDATORY</blink>
+            </div>
+
+            <div class="feature-card" style="--rotation: 2deg;">
+                <h3>🎰 Random Features</h3>
+                <p>Every command has a 73% chance of doing what you expect! The other 27% is a surprise!</p>
+                <span style="font-size: 2rem;">🎲</span>
+            </div>
+
+            <div class="feature-card" style="--rotation: -1.5deg;">
+                <h3>🦝 Garbage Collection</h3>
+                <p>We don't know what this does but Git has it so we pretend we do too!</p>
+                <small>*May attract actual raccoons</small>
+            </div>
+
+            <div class="feature-card" style="--rotation: 1deg;">
+                <h3>📊 "Professional" Reports</h3>
+                <p>Export to JSON, CSV, or our proprietary format: YOLO (You Only Log Once)</p>
+                <code style="font-size: 0.8rem;">{"status": "¯\_(ツ)_/¯"}</code>
+            </div>
+        </div>
+
+        <div class="warning-banner" style="background: #00ff00; color: #000;">
+            💚 INSTALLATION (AT YOUR OWN RISK) 💚
+        </div>
+
+        <div class="code-block">
+            <pre>$ gem install worktrees
+Installing...
+WARNING: This gem may contain traces of bugs
+WARNING: Side effects include productivity
+WARNING: Not responsible for lost commits
+Successfully* installed worktrees-0.9.2.1.alpha.rc2.FINAL(2)
+
+*Success is a relative term</pre>
+        </div>
+
+        <h2 style="text-align: center; color: #ff0000; margin: 2rem 0;">
+            🎪 LIVE DEMO 🎪
+        </h2>
+
+        <div class="code-block" style="font-family: monospace; background: #000; color: #0f0;">
+            <pre>$ worktrees create 001-please-work
+INITIATING WORKTREE CREATION SEQUENCE...
+[████████████████████░░] 87% ... 
+ERROR: Coffee levels too low
+RETRYING WITH EMERGENCY PROTOCOLS...
+✓ Worktree "created" at ~/.worktrees/001-please-work
+⚠️  May or may not actually exist
+⚠️  Schrodinger's worktree detected
+
+$ worktrees list
+SCANNING FOR SURVIVORS...
+* 001-please-work    zombie    ~/.worktrees/001-please-work
+  002-help-me        haunted   ~/.worktrees/002-help-me  
+  003-final-final    cursed    ~/.worktrees/003-final-final
+  999-the-end        ERROR     ḩ̸̈ë̷́ͅl̶̰̈p̴̱̾ ̶̜̇m̷̱̾ë̸͇̈́
+
+$ worktrees remove 999-the-end
+ARE YOU SURE? THIS ACTION IS IRREVERSIBLE [Y/N]: Y
+ARE YOU REALLY SURE? [Y/N]: Y
+LIKE, REALLY REALLY SURE? [Y/N]: Y
+Deleting... just kidding, it's immortal now
+Good luck!</pre>
+        </div>
+
+        <div class="sticky-note" style="max-width: 500px; margin: 3rem auto;">
+            <h3>⚡ Quick Start Guide ⚡</h3>
+            <ol>
+                <li>Install the gem</li>
+                <li>Pray to your deity of choice</li>
+                <li>Run <code>worktrees create 001-test</code></li>
+                <li>If smoke appears, that's normal</li>
+                <li>If no smoke appears, that's concerning</li>
+                <li>Check if worktree exists (optional, reality is subjective)</li>
+            </ol>
+        </div>
+
+        <div class="under-construction-tape">
+            🔧 MORE FEATURES COMING SOON™ 🔧
+        </div>
+
+        <footer>
+            <div style="font-size: 1.5rem; margin-bottom: 1rem;">
+                <span class="spinning-logo">💎</span> Built with Ruby and Desperation <span class="spinning-logo">💎</span>
+            </div>
+            <div>No warranties expressed, implied, or even considered</div>
+            <div style="margin-top: 1rem; font-size: 0.8rem;">
+                Best viewed in Netscape Navigator 4.0 at 800x600 resolution
+            </div>
+            <div class="visitor-counter">
+                Visitor #<span id="counter">000042</span> (You're our only user!)
+            </div>
+            <div style="margin-top: 1rem;">
+                <marquee>This website is certified 100% Y2K compliant! Probably!</marquee>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // Add random sparkles
+        function createSparkle() {
+            const sparkle = document.createElement('div');
+            sparkle.className = 'sparkle';
+            sparkle.textContent = '✨';
+            sparkle.style.left = Math.random() * window.innerWidth + 'px';
+            sparkle.style.top = Math.random() * window.innerHeight + 'px';
+            sparkle.style.animationDelay = Math.random() * 2 + 's';
+            document.getElementById('sparkles').appendChild(sparkle);
+            
+            setTimeout(() => sparkle.remove(), 2000);
+        }
+
+        setInterval(createSparkle, 500);
+
+        // Fake visitor counter
+        let counter = 42;
+        setInterval(() => {
+            counter += Math.floor(Math.random() * 3);
+            document.getElementById('counter').textContent = String(counter).padStart(6, '0');
+        }, 5000);
+
+        // Random console warnings for authenticity
+        console.warn("⚠️ WARNING: This console may contain nuts");
+        console.error("ERROR 404: Professionalism not found");
+        console.log("%c🔥 EVERYTHING IS FINE 🔥", "color: red; font-size: 20px; font-weight: bold;");
+
+        // Random page tilt on load
+        document.querySelector('.main-container').style.transform = `rotate(${Math.random() * 2 - 1}deg)`;
+
+        // Add more chaos
+        setTimeout(() => {
+            console.log("Still here? Brave soul.");
+        }, 10000);
+    </script>
+</body>
+</html>
