@@ -26,7 +26,8 @@ module Worktrees
     end
 
     private_class_method def self.validate_git_repository
-      return if Dir.exist?('.git') || system('git rev-parse --git-dir >/dev/null 2>&1')
+      # Use git's own repository detection which traverses up the directory tree
+      return if system('git rev-parse --git-dir >/dev/null 2>&1')
 
       warn 'ERROR: Not in a git repository'
       warn 'Run this command from inside a git repository'
