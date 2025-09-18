@@ -23,7 +23,9 @@ RSpec.describe Worktrees::Commands::Remove, type: :aruba do
 
     it 'handles removal errors' do
       expect { command.call(name: 'nonexistent') }
-        .to raise_error(Worktrees::NotFoundError, /not found/)
+        .to raise_error(SystemExit) do |error|
+          expect(error.status).to eq(2)
+        end
     end
   end
 end

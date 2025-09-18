@@ -28,7 +28,7 @@ RSpec.describe 'worktrees list', type: :aruba do
     expect(last_command_started).to have_exit_status(0)
     expect(last_command_started).to have_output_on_stdout(/001-feature-a.*clean/)
     expect(last_command_started).to have_output_on_stdout(/002-feature-b.*clean/)
-    expect(last_command_started).to have_output_on_stdout(/from main/)
+    expect(last_command_started).to have_output_on_stdout(/from (main|master)/)
   end
 
   it 'shows active worktree with asterisk' do

@@ -56,7 +56,7 @@ RSpec.describe 'worktrees remove', type: :aruba do
   it 'allows force removal of worktree with untracked files' do
     run_command('worktrees switch 001-remove-test')
     write_file('untracked.txt', 'untracked file')
-    run_command('cd ..')
+    cd('..')
     run_command('worktrees remove 001-remove-test --force-untracked')
 
     expect(last_command_started).to have_exit_status(0)

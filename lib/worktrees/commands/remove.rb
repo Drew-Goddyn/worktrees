@@ -46,6 +46,9 @@ module Worktrees
           warn "ERROR: Validation: #{e.message}"
           warn 'Use \'worktrees list\' to see existing worktrees'
           exit(2)
+        rescue NotFoundError => e
+          warn "ERROR: #{e.message}"
+          exit(2)
         rescue StateError => e
           warn "ERROR: Precondition: #{e.message}"
           exit(3)
