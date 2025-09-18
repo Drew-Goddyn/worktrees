@@ -52,7 +52,7 @@ RSpec.describe Worktrees::Models::FeatureWorktree do
 
   describe '#active?' do
     it 'returns true when status is active' do
-      worktree = described_class.new(**valid_attributes.merge(status: :active))
+      worktree = described_class.new(**valid_attributes, status: :active)
       expect(worktree.active?).to be true
     end
 
@@ -64,7 +64,7 @@ RSpec.describe Worktrees::Models::FeatureWorktree do
 
   describe '#dirty?' do
     it 'returns true when status is dirty' do
-      worktree = described_class.new(**valid_attributes.merge(status: :dirty))
+      worktree = described_class.new(**valid_attributes, status: :dirty)
       expect(worktree.dirty?).to be true
     end
 

@@ -3,7 +3,9 @@
 module GitHelpers
   def default_branch
     # Get the current default branch (main or master)
-    result = run_command_and_stop('git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null || git branch --show-current 2>/dev/null || echo "main"', fail_on_error: false)
+    result = run_command_and_stop(
+      'git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null || git branch --show-current 2>/dev/null || echo "main"', fail_on_error: false
+    )
     branch = result.stdout.strip.gsub('refs/remotes/origin/', '')
     branch.empty? ? 'main' : branch
   end
@@ -81,24 +83,29 @@ module GitHelpers
 
     begin
       # Only attempt cleanup if we're in a git repository
-      unless Dir.exist?('.git') || ENV['GIT_DIR']
-        return
-      end
+      return unless Dir.exist?('.git') || ENV['GIT_DIR']
 
       # List and remove worktrees safely
       cleanup_worktree_references
       cleanup_worktree_directories
       prune_worktree_metadata
-
-    rescue => e
+    rescue StandardError => e
       warn "Warning: Git cleanup failed: #{e.message}" if ENV['WORKTREES_VERBOSE']
     ensure
       # Always ensure we return to original directory if it still exists
       if Dir.exist?(original_dir)
-        Dir.chdir(original_dir) rescue nil
+        begin
+          Dir.chdir(original_dir)
+        rescue StandardError
+          nil
+        end
       else
         # If original directory was deleted, go to a safe fallback
-        Dir.chdir(ENV['HOME'] || '/tmp') rescue nil
+        begin
+          Dir.chdir(Dir.home || '/tmp')
+        rescue StandardError
+          nil
+        end
       end
     end
   end
@@ -114,14 +121,14 @@ module GitHelpers
     worktree_paths = []
 
     result.stdout.split("\n").each do |line|
-      if line.start_with?('worktree ')
-        path = line.sub('worktree ', '').strip
-        # Skip main repository directory and non-existent paths
-        next if path == current_repo_path
-        next unless path.include?('.worktrees') || path.include?('worktree')
+      next unless line.start_with?('worktree ')
 
-        worktree_paths << path
-      end
+      path = line.sub('worktree ', '').strip
+      # Skip main repository directory and non-existent paths
+      next if path == current_repo_path
+      next unless path.include?('.worktrees') || path.include?('worktree')
+
+      worktree_paths << path
     end
 
     # Remove worktrees with safety checks
@@ -140,12 +147,15 @@ module GitHelpers
     # If directory still exists, remove it manually
     if Dir.exist?(path)
       # Double-check we're not removing something important
-      return if path == '/' || path == ENV['HOME'] || path.length < 5
+      return if path == '/' || path == Dir.home || path.length < 5
 
-      FileUtils.rm_rf(path) rescue nil
+      begin
+        FileUtils.rm_rf(path)
+      rescue StandardError
+        nil
+      end
     end
-
-  rescue => e
+  rescue StandardError => e
     warn "Warning: Failed to cleanup worktree #{path}: #{e.message}" if ENV['WORKTREES_VERBOSE']
   end
 
@@ -154,16 +164,15 @@ module GitHelpers
     worktree_dirs = ['.worktrees']
 
     # Also check global worktree directory if it exists in test context
-    if ENV['HOME'] && Dir.exist?(File.join(ENV['HOME'], '.worktrees'))
-      worktree_dirs << File.join(ENV['HOME'], '.worktrees')
-    end
+    worktree_dirs << File.join(Dir.home, '.worktrees') if Dir.home && Dir.exist?(File.join(Dir.home,
+                                                                                           '.worktrees'))
 
     worktree_dirs.each do |dir|
       next unless Dir.exist?(dir)
 
       begin
         FileUtils.rm_rf(dir)
-      rescue => e
+      rescue StandardError => e
         warn "Warning: Failed to remove #{dir}: #{e.message}" if ENV['WORKTREES_VERBOSE']
       end
     end
@@ -176,17 +185,22 @@ module GitHelpers
     # Clean up git administrative files for worktrees
     git_worktrees_dir = '.git/worktrees'
     if Dir.exist?(git_worktrees_dir)
-      FileUtils.rm_rf(git_worktrees_dir) rescue nil
+      begin
+        FileUtils.rm_rf(git_worktrees_dir)
+      rescue StandardError
+        nil
+      end
     end
 
     # Remove any git lock files that might prevent cleanup
     if Dir.exist?('.git')
       Dir.glob('.git/**/*.lock').each do |lock_file|
-        File.unlink(lock_file) rescue nil
+        File.unlink(lock_file)
+      rescue StandardError
+        nil
       end
     end
-
-  rescue => e
+  rescue StandardError => e
     warn "Warning: Failed to prune worktree metadata: #{e.message}" if ENV['WORKTREES_VERBOSE']
   end
 end

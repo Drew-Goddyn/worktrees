@@ -9,14 +9,11 @@ def safe_global_cleanup
 
   begin
     # Clean up any leftover temporary directories
-    if Dir.exist?('tmp')
-      system("rm -rf tmp/ 2>/dev/null")
-    end
+    system('rm -rf tmp/ 2>/dev/null') if Dir.exist?('tmp')
 
     # Global git worktree cleanup
-    system("git worktree prune 2>/dev/null") if File.exist?('.git')
-
-  rescue => e
+    system('git worktree prune 2>/dev/null') if File.exist?('.git')
+  rescue StandardError => e
     warn "Warning: Global cleanup failed: #{e.message}"
   ensure
     # Ensure we're in a safe directory
@@ -46,19 +43,25 @@ RSpec.configure do |config|
 
   # Test error handling with CI-specific reporting
   config.around(:each) do |example|
-    begin
-      CIEnvironment.with_enhanced_error_handling { example.run }
-    rescue => e
-      # Enhanced error reporting for CI
-      if CIEnvironment.ci_environment? && ENV['DEBUG']
-        puts "\n=== Test Failure Debug Information ==="
-        puts "Test: #{example.full_description}"
-        puts "Error: #{e.class}: #{e.message}"
-        puts "Current Directory: #{Dir.pwd rescue 'unknown'}"
-        puts "Working Directory Exists: #{Dir.exist?(Dir.pwd) rescue false}"
-      end
-      raise e
+    CIEnvironment.with_enhanced_error_handling { example.run }
+  rescue StandardError => e
+    # Enhanced error reporting for CI
+    if CIEnvironment.ci_environment? && ENV['DEBUG']
+      puts "\n=== Test Failure Debug Information ==="
+      puts "Test: #{example.full_description}"
+      puts "Error: #{e.class}: #{e.message}"
+      puts "Current Directory: #{begin
+        Dir.pwd
+      rescue StandardError
+        'unknown'
+      end}"
+      puts "Working Directory Exists: #{begin
+        Dir.exist?(Dir.pwd)
+      rescue StandardError
+        false
+      end}"
     end
+    raise e
   end
 
   # rspec-expectations config goes here

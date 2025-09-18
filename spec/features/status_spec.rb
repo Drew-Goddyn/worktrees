@@ -30,7 +30,7 @@ RSpec.describe 'worktrees status', type: :aruba do
     expect(last_command_started).to have_exit_status(0)
 
     # Change to the worktree directory to test status command (global location)
-    global_worktree_path = File.join(ENV['HOME'], '.worktrees', '001-status-test')
+    global_worktree_path = File.join(Dir.home, '.worktrees', '001-status-test')
     cd(global_worktree_path) do
       run_command('worktrees status')
       expect(last_command_started).to have_exit_status(0)
@@ -46,7 +46,7 @@ RSpec.describe 'worktrees status', type: :aruba do
     run_command('worktrees switch 001-dirty-test')
 
     # Change to the worktree directory to modify files and test status
-    global_worktree_path = File.join(ENV['HOME'], '.worktrees', '001-dirty-test')
+    global_worktree_path = File.join(Dir.home, '.worktrees', '001-dirty-test')
     cd(global_worktree_path) do
       write_file('test.txt', 'initial content')
       run_command('git add test.txt')
@@ -64,7 +64,7 @@ RSpec.describe 'worktrees status', type: :aruba do
     run_command('worktrees switch 001-json-status')
 
     # Change to the worktree directory to test JSON status output
-    global_worktree_path = File.join(ENV['HOME'], '.worktrees', '001-json-status')
+    global_worktree_path = File.join(Dir.home, '.worktrees', '001-json-status')
     cd(global_worktree_path) do
       run_command('worktrees status --format json')
       expect(last_command_started).to have_exit_status(0)

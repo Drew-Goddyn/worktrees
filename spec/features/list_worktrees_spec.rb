@@ -36,7 +36,7 @@ RSpec.describe 'worktrees list', type: :aruba do
     run_command('worktrees switch 001-active')
 
     # Change to the worktree directory to test active worktree detection
-    global_worktree_path = File.join(ENV['HOME'], '.worktrees', '001-active')
+    global_worktree_path = File.join(Dir.home, '.worktrees', '001-active')
     cd(global_worktree_path) do
       run_command('worktrees list')
       expect(last_command_started).to have_exit_status(0)

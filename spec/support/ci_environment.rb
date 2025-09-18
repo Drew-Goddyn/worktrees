@@ -5,7 +5,7 @@
 module CIEnvironment
   class << self
     def ci_environment?
-      !!(ENV['CI'] || ENV['GITHUB_ACTIONS'] || ENV['BUILDKITE'] || ENV['TRAVIS'])
+      !!(ENV['CI'] || ENV['GITHUB_ACTIONS'] || ENV['BUILDKITE'] || ENV.fetch('TRAVIS', nil))
     end
 
     def github_actions?
@@ -36,7 +36,7 @@ module CIEnvironment
       puts "Ruby Version: #{RUBY_VERSION}"
       puts "Working Directory: #{Dir.pwd}"
       puts "Temp Directory: #{Dir.tmpdir}"
-      puts "Home Directory: #{ENV['HOME']}"
+      puts "Home Directory: #{Dir.home}"
 
       puts "\nEnvironment Variables:"
       debug_env_vars.each { |k, v| puts "  #{k}=#{v}" }
@@ -55,10 +55,8 @@ module CIEnvironment
 
     def with_enhanced_error_handling
       yield
-    rescue => e
-      if ci_environment?
-        enhanced_error_reporting(e)
-      end
+    rescue StandardError => e
+      enhanced_error_reporting(e) if ci_environment?
       raise e
     end
 
@@ -82,6 +80,7 @@ module CIEnvironment
       return 'Buildkite' if ENV['BUILDKITE']
       return 'Travis CI' if ENV['TRAVIS']
       return 'CircleCI' if ENV['CIRCLECI']
+
       'Unknown CI'
     end
 
@@ -91,9 +90,9 @@ module CIEnvironment
       # Increase timeouts for CI environment
       if defined?(Aruba)
         Aruba.configure do |config|
-          config.exit_timeout = 30  # Increased from default 5
-          config.io_wait_timeout = 10  # Increased from default 2
-          config.startup_wait_time = 2  # Increased from default 0.5
+          config.exit_timeout = 30 # Increased from default 5
+          config.io_wait_timeout = 10 # Increased from default 2
+          config.startup_wait_time = 2 # Increased from default 0.5
         end
       end
 
@@ -122,13 +121,11 @@ module CIEnvironment
 
     def configure_failure_handling
       # Configure RSpec to collect artifacts on failure
-      if defined?(RSpec)
-        RSpec.configure do |config|
-          config.after(:each) do |example|
-            if example.exception && ci_environment?
-              collect_failure_artifacts(example.full_description, example.exception)
-            end
-          end
+      return unless defined?(RSpec)
+
+      RSpec.configure do |config|
+        config.after(:each) do |example|
+          collect_failure_artifacts(example.full_description, example.exception) if example.exception && ci_environment?
         end
       end
     end
@@ -148,27 +145,29 @@ module CIEnvironment
     end
 
     def debug_file_system
-      begin
-        entries = Dir.glob('**/*', File::FNM_DOTMATCH)
-                     .reject { |f| f.match?(%r{^\.+$}) }
-                     .sort
-                     .first(20)
+      entries = Dir.glob('**/*', File::FNM_DOTMATCH)
+                   .grep_v(/^\.+$/)
+                   .sort
+                   .first(20)
 
-        entries.each { |entry| puts "  #{entry}" }
-        puts "  ... (#{Dir.glob('**/*').length} total entries)" if Dir.glob('**/*').length > 20
-      rescue => e
-        puts "  Error reading file system: #{e.message}"
-      end
+      entries.each { |entry| puts "  #{entry}" }
+      puts "  ... (#{Dir.glob('**/*').length} total entries)" if Dir.glob('**/*').length > 20
+    rescue StandardError => e
+      puts "  Error reading file system: #{e.message}"
     end
 
     def enhanced_error_reporting(error)
       puts "\n::error::Enhanced Error Report"
       puts "Error Class: #{error.class}"
       puts "Error Message: #{error.message}"
-      puts "Backtrace:"
+      puts 'Backtrace:'
       error.backtrace&.first(10)&.each { |line| puts "  #{line}" }
 
-      puts "\nCurrent Directory: #{Dir.pwd rescue 'unknown'}"
+      puts "\nCurrent Directory: #{begin
+        Dir.pwd
+      rescue StandardError
+        'unknown'
+      end}"
       puts "Process ID: #{Process.pid}"
       puts "Time: #{Time.now}"
     end
@@ -177,7 +176,11 @@ module CIEnvironment
       File.write("#{artifacts_dir}/error.txt", error.message)
       File.write("#{artifacts_dir}/backtrace.txt", error.backtrace.join("\n")) if error.backtrace
       File.write("#{artifacts_dir}/environment.txt", ENV.to_h.inspect)
-      File.write("#{artifacts_dir}/pwd.txt", (Dir.pwd rescue 'unknown'))
+      File.write("#{artifacts_dir}/pwd.txt", begin
+        Dir.pwd
+      rescue StandardError
+        'unknown'
+      end)
     end
 
     def collect_git_artifacts(artifacts_dir)
@@ -191,12 +194,10 @@ module CIEnvironment
       ]
 
       git_commands.each do |command, filename|
-        begin
-          output = `#{command} 2>&1`
-          File.write("#{artifacts_dir}/#{filename}", output)
-        rescue => e
-          File.write("#{artifacts_dir}/#{filename}", "Error: #{e.message}")
-        end
+        output = `#{command} 2>&1`
+        File.write("#{artifacts_dir}/#{filename}", output)
+      rescue StandardError => e
+        File.write("#{artifacts_dir}/#{filename}", "Error: #{e.message}")
       end
     end
 
@@ -209,12 +210,10 @@ module CIEnvironment
       ]
 
       system_commands.each do |command, filename|
-        begin
-          output = `#{command} 2>&1`
-          File.write("#{artifacts_dir}/#{filename}", output)
-        rescue => e
-          File.write("#{artifacts_dir}/#{filename}", "Error: #{e.message}")
-        end
+        output = `#{command} 2>&1`
+        File.write("#{artifacts_dir}/#{filename}", output)
+      rescue StandardError => e
+        File.write("#{artifacts_dir}/#{filename}", "Error: #{e.message}")
       end
     end
 

@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require 'English'
 require_relative 'isolated_test_environment'
 
 # Provides hermetic test isolation using directory-based containers
@@ -10,7 +11,7 @@ module TestIsolation
   class IsolationError < StandardError; end
 
   # Runs a test in complete isolation with automatic cleanup
-  def with_isolated_test(&block)
+  def with_isolated_test
     isolation_context = IsolationContext.new
     isolation_context.setup
 
@@ -28,13 +29,11 @@ module TestIsolation
     begin
       yield
     rescue *exceptions => e
-      if attempt < attempts
-        sleep delay
-        attempt += 1
-        retry
-      else
-        raise e
-      end
+      raise e unless attempt < attempts
+
+      sleep delay
+      attempt += 1
+      retry
     end
   end
 
@@ -71,11 +70,9 @@ module TestIsolation
 
       # Execute cleanup callbacks in reverse order
       @cleanup_callbacks.reverse.each do |callback|
-        begin
-          callback.call
-        rescue => e
-          warn "Warning: Cleanup callback failed: #{e.message}"
-        end
+        callback.call
+      rescue StandardError => e
+        warn "Warning: Cleanup callback failed: #{e.message}"
       end
 
       # Clean up isolated environment
@@ -105,11 +102,11 @@ module TestIsolation
     # Create worktrees directory structure
     def create_worktrees_structure
       worktrees_path = File.join(@workspace_path, '.worktrees')
-      Dir.mkdir(worktrees_path) unless Dir.exist?(worktrees_path)
+      FileUtils.mkdir_p(worktrees_path)
 
       # Set up global worktrees directory in home
       global_worktrees = File.join(@home_path, '.worktrees')
-      Dir.mkdir(global_worktrees) unless Dir.exist?(global_worktrees)
+      FileUtils.mkdir_p(global_worktrees)
 
       add_cleanup_callback { cleanup_worktrees_structure(worktrees_path, global_worktrees) }
 
@@ -129,7 +126,7 @@ module TestIsolation
           system(command)
         end
 
-        $?.exitstatus
+        $CHILD_STATUS.exitstatus
       ensure
         Dir.chdir(original_dir) if Dir.exist?(original_dir)
       end
@@ -213,9 +210,9 @@ module TestIsolation
         system('git worktree prune --verbose 2>/dev/null')
 
         # Clean up worktree administrative files
-        FileUtils.rm_rf('.git/worktrees') if Dir.exist?('.git/worktrees')
+        FileUtils.rm_rf('.git/worktrees')
       end
-    rescue => e
+    rescue StandardError => e
       warn "Warning: Git repository cleanup failed for #{repo_path}: #{e.message}"
     end
 
@@ -225,7 +222,7 @@ module TestIsolation
 
         begin
           FileUtils.rm_rf(path)
-        rescue => e
+        rescue StandardError => e
           warn "Warning: Worktrees cleanup failed for #{path}: #{e.message}"
         end
       end

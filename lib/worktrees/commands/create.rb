@@ -4,6 +4,7 @@ require 'dry/cli'
 
 module Worktrees
   module Commands
+    # Creates new feature worktrees with validation and git integration
     class Create < Dry::CLI::Command
       desc 'Create a new feature worktree'
 
@@ -18,56 +19,66 @@ module Worktrees
         validate_arguments(name, base_ref)
 
         begin
-          # Create manager with options
-          config = Models::WorktreeConfig.load
-          if options[:'worktrees-root']
-            config = Models::WorktreeConfig.new(
-              worktrees_root: options[:'worktrees-root'],
-              default_base: config.default_base,
-              force_cleanup: config.force_cleanup
-            )
-          end
-
-          manager = WorktreeManager.new(nil, config)
-          create_options = options.select { |k, _| %i[force].include?(k) }
-
-          worktree = manager.create_worktree(name, base_ref, create_options)
-
-          # Display success message
-          puts "Created worktree: #{worktree.name}"
-          puts "  Path: #{worktree.path}"
-          puts "  Branch: #{worktree.branch}"
-          puts "  Base: #{worktree.base_ref}"
-          puts "  Status: #{worktree.status}"
-
-          # Switch to worktree if requested
-          if options[:switch]
-            manager.switch_to_worktree(name)
-            puts "\nSwitched to worktree: #{name}"
-          end
-
+          manager = build_manager(options)
+          worktree = create_worktree(manager, name, base_ref, options)
+          display_success(worktree)
+          handle_switch(manager, name, options)
         rescue ValidationError => e
-          warn "ERROR: Validation: #{e.message}"
-          exit(2)
+          handle_error('Validation', e.message, 2)
         rescue GitError => e
-          warn "ERROR: Git: #{e.message}"
-          exit(3)
+          handle_error('Git', e.message, 3)
         rescue StateError => e
-          warn "ERROR: State: #{e.message}"
-          exit(3)
+          handle_error('State', e.message, 3)
         rescue StandardError => e
-          warn "ERROR: #{e.message}"
-          exit(1)
+          handle_error('', e.message, 1)
         end
       end
 
       private
 
-      def validate_arguments(name, base_ref)
+      def validate_arguments(name, _base_ref)
         raise ValidationError, 'Name is required' if name.nil?
         raise ValidationError, 'Name cannot be empty' if name.empty?
+      end
 
-        # Additional argument validation could go here
+      def build_manager(options)
+        config = Models::WorktreeConfig.load
+        config = override_config(config, options) if options[:'worktrees-root']
+        WorktreeManager.new(nil, config)
+      end
+
+      def override_config(config, options)
+        Models::WorktreeConfig.new(
+          worktrees_root: options[:'worktrees-root'],
+          default_base: config.default_base,
+          force_cleanup: config.force_cleanup
+        )
+      end
+
+      def create_worktree(manager, name, base_ref, options)
+        create_options = options.slice(:force)
+        manager.create_worktree(name, base_ref, create_options)
+      end
+
+      def display_success(worktree)
+        puts "Created worktree: #{worktree.name}"
+        puts "  Path: #{worktree.path}"
+        puts "  Branch: #{worktree.branch}"
+        puts "  Base: #{worktree.base_ref}"
+        puts "  Status: #{worktree.status}"
+      end
+
+      def handle_switch(manager, name, options)
+        return unless options[:switch]
+
+        manager.switch_to_worktree(name)
+        puts "\nSwitched to worktree: #{name}"
+      end
+
+      def handle_error(type, message, exit_code)
+        prefix = type.empty? ? 'ERROR:' : "ERROR: #{type}:"
+        warn "#{prefix} #{message}"
+        exit(exit_code)
       end
     end
   end

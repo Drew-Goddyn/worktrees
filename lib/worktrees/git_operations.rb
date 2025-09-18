@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require 'English'
 module Worktrees
   module GitOperations
     class << self
@@ -15,18 +16,16 @@ module Worktrees
       end
 
       def list_worktrees
-        begin
-          output = `git worktree list --porcelain`
-          raise GitError, "Failed to list worktrees: git command failed" unless $?.success?
+        output = `git worktree list --porcelain`
+        raise GitError, 'Failed to list worktrees: git command failed' unless $CHILD_STATUS.success?
 
-          parse_worktree_list(output)
-        rescue StandardError => e
-          raise GitError, "Failed to list worktrees: #{e.message}"
-        end
+        parse_worktree_list(output)
+      rescue StandardError => e
+        raise GitError, "Failed to list worktrees: #{e.message}"
       end
 
       def remove_worktree(path, force: false)
-        args = ['git', 'worktree', 'remove']
+        args = %w[git worktree remove]
         args << '--force' if force
         args << path
 
@@ -45,14 +44,12 @@ module Worktrees
         system('git', 'diff-index', '--quiet', 'HEAD', chdir: worktree_path)
       end
 
-      def has_unpushed_commits?(branch_name)
-        begin
-          output = `git rev-list @{u}..HEAD`
-          $?.success? && !output.strip.empty?
-        rescue StandardError
-          # No upstream branch or other error - consider as no unpushed commits
-          false
-        end
+      def has_unpushed_commits?(_branch_name)
+        output = `git rev-list @{u}..HEAD`
+        $CHILD_STATUS.success? && !output.strip.empty?
+      rescue StandardError
+        # No upstream branch or other error - consider as no unpushed commits
+        false
       end
 
       def fetch_ref(ref)
@@ -83,11 +80,11 @@ module Worktrees
           when /^worktree (.+)$/
             # Save previous worktree if exists
             worktrees << current_worktree unless current_worktree.empty?
-            current_worktree = { path: $1 }
+            current_worktree = { path: ::Regexp.last_match(1) }
           when /^HEAD (.+)$/
-            current_worktree[:commit] = $1
+            current_worktree[:commit] = ::Regexp.last_match(1)
           when /^branch (.+)$/
-            current_worktree[:branch] = $1.sub('refs/heads/', '')
+            current_worktree[:branch] = ::Regexp.last_match(1).sub('refs/heads/', '')
           when /^detached$/
             current_worktree[:detached] = true
           when /^bare$/

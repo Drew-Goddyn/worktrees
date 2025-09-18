@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require 'English'
 module Worktrees
   module Models
     class Repository
@@ -35,17 +36,15 @@ module Worktrees
       def validate_git_repository!
         git_dir = File.join(@root_path, '.git')
         # .git can be either a directory (main repo) or a file (worktree)
-        unless File.exist?(git_dir)
-          raise GitError, "Not a git repository: #{@root_path}"
-        end
+        return if File.exist?(git_dir)
+
+        raise GitError, "Not a git repository: #{@root_path}"
       end
 
       def git_default_branch
         # Try to get default branch from remote HEAD
         result = `cd "#{@root_path}" && git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null`.strip
-        if $?.success? && !result.empty?
-          return result.split('/').last
-        end
+        return result.split('/').last if $CHILD_STATUS.success? && !result.empty?
 
         # Fallback: check if main exists, then master
         if git_branch_exists?('main')
@@ -68,7 +67,7 @@ module Worktrees
 
       def git_remote_url
         result = `cd "#{@root_path}" && git remote get-url origin 2>/dev/null`.strip
-        $?.success? && !result.empty? ? result : nil
+        $CHILD_STATUS.success? && !result.empty? ? result : nil
       end
     end
   end

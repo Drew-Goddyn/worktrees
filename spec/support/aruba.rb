@@ -29,7 +29,11 @@ RSpec.configure do |config|
         example.run
       ensure
         # Ensure we return to safe directory before cleanup
-        Dir.chdir(isolation_context.safe_directory) rescue nil
+        begin
+          Dir.chdir(isolation_context.safe_directory)
+        rescue StandardError
+          nil
+        end
       end
     end
   end

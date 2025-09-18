@@ -11,30 +11,27 @@ module Worktrees
       option :format, type: :string, default: 'text', values: %w[text json], desc: 'Output format'
 
       def call(**options)
-        begin
-          manager = WorktreeManager.new
-          current_worktree = manager.current_worktree
+        manager = WorktreeManager.new
+        current_worktree = manager.current_worktree
 
-          if current_worktree.nil?
-            warn 'ERROR: Not in a worktree'
-            show_repository_info(manager, options[:format])
-            exit(4)
-          end
-
-          case options[:format]
-          when 'json'
-            output_json(current_worktree, manager)
-          else
-            output_text(current_worktree, manager)
-          end
-
-        rescue GitError => e
-          warn "ERROR: Git: #{e.message}"
-          exit(3)
-        rescue StandardError => e
-          warn "ERROR: #{e.message}"
-          exit(1)
+        if current_worktree.nil?
+          warn 'ERROR: Not in a worktree'
+          show_repository_info(manager, options[:format])
+          exit(4)
         end
+
+        case options[:format]
+        when 'json'
+          output_json(current_worktree, manager)
+        else
+          output_text(current_worktree, manager)
+        end
+      rescue GitError => e
+        warn "ERROR: Git: #{e.message}"
+        exit(3)
+      rescue StandardError => e
+        warn "ERROR: #{e.message}"
+        exit(1)
       end
 
       private
@@ -49,7 +46,7 @@ module Worktrees
         case worktree.status
         when :dirty
           # Could enhance to show number of modified files
-          puts "  Status: dirty (modified files)"
+          puts '  Status: dirty (modified files)'
         else
           puts "  Status: #{worktree.status}"
         end
@@ -85,9 +82,7 @@ module Worktrees
         else
           puts "Repository: #{manager.repository.root_path}"
           puts "Worktrees root: #{manager.config.expand_worktrees_root}"
-          if manager.repository.remote_url
-            puts "Remote: #{manager.repository.remote_url}"
-          end
+          puts "Remote: #{manager.repository.remote_url}" if manager.repository.remote_url
         end
       end
     end

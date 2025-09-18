@@ -35,18 +35,15 @@ module IsolatedTestEnvironment
       Dir.chdir(@original_directory) if Dir.exist?(@original_directory)
 
       # Only clean up if the test directory still exists
-      if Dir.exist?(@test_root)
-        # Force removal of the isolated directory tree
-        FileUtils.remove_entry_secure(@test_root)
-      end
 
-    rescue => e
+      # Force removal of the isolated directory tree
+      FileUtils.rm_rf(@test_root)
+    rescue StandardError => e
       # Log cleanup failures but don't fail tests
       warn "Warning: Failed to cleanup isolated environment #{@test_root}: #{e.message}"
 
       # Attempt forced cleanup as fallback
       system("rm -rf '#{@test_root}' 2>/dev/null") if @test_root
-
     ensure
       # Reset instance variables
       @test_root = nil
@@ -54,7 +51,7 @@ module IsolatedTestEnvironment
     end
   end
 
-  def in_isolated_environment(&block)
+  def in_isolated_environment
     setup_isolated_environment
     yield(@test_root)
   ensure
@@ -98,9 +95,9 @@ module IsolatedTestEnvironment
 
   def ensure_safe_return_path
     # Ensure original directory exists and is accessible
-    unless Dir.exist?(@original_directory)
-      @original_directory = Dir.tmpdir
-    end
+    return if Dir.exist?(@original_directory)
+
+    @original_directory = Dir.tmpdir
   end
 
   def setup_isolated_environment_variables
@@ -111,8 +108,8 @@ module IsolatedTestEnvironment
   end
 
   def ensure_in_isolated_environment!
-    unless @test_root && Dir.pwd == @test_root
-      raise EnvironmentError, "Not in isolated environment. Call setup_isolated_environment first."
-    end
+    return if @test_root && Dir.pwd == @test_root
+
+    raise EnvironmentError, 'Not in isolated environment. Call setup_isolated_environment first.'
   end
 end

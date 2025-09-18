@@ -8,8 +8,8 @@ ruby '>= 3.2.0'
 gemspec
 
 group :development, :test do
-  gem 'rspec', '~> 3.12'
   gem 'aruba', '~> 2.1'
+  gem 'rspec', '~> 3.12'
   gem 'rubocop', '~> 1.57'
   gem 'rubocop-rspec', '~> 2.25'
 end

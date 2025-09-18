@@ -7,7 +7,7 @@ module Worktrees
   module Models
     class WorktreeConfig
       DEFAULT_ROOT = '~/.worktrees'
-      NAME_PATTERN = /^[0-9]{3}-[a-z0-9-]{1,40}$/.freeze
+      NAME_PATTERN = /^[0-9]{3}-[a-z0-9-]{1,40}$/
       RESERVED_NAMES = %w[main master].freeze
 
       attr_reader :worktrees_root, :default_base, :force_cleanup, :name_pattern
@@ -54,11 +54,7 @@ module Worktrees
       end
 
       def expand_worktrees_root
-        if @worktrees_root.start_with?('~')
-          File.expand_path(@worktrees_root)
-        else
-          File.expand_path(@worktrees_root)
-        end
+        File.expand_path(@worktrees_root)
       end
 
       def to_h

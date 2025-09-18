@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require 'English'
 require 'fileutils'
 
 module Worktrees
@@ -17,7 +18,7 @@ module Worktrees
       @config = config || Models::WorktreeConfig.load
     end
 
-    def create_worktree(name, base_ref = nil, options = {})
+    def create_worktree(name, base_ref = nil, _options = {})
       # Validate arguments
       raise ValidationError, 'Name is required' if name.nil?
       raise ValidationError, 'Name cannot be empty' if name.empty?
@@ -26,8 +27,10 @@ module Worktrees
       unless Models::FeatureWorktree.validate_name(name)
         # Check what specific error to show
         unless name.match?(Models::FeatureWorktree::NAME_PATTERN)
-          raise ValidationError, "Invalid name format '#{name}'. Names must match pattern: NNN-kebab-feature"
+          raise ValidationError,
+                "Invalid name format '#{name}'. Names must match pattern: NNN-kebab-feature"
         end
+
         feature_part = name.split('-', 2)[1]
         if feature_part && Models::FeatureWorktree::RESERVED_NAMES.include?(feature_part.downcase)
           raise ValidationError, "Reserved name '#{feature_part}' not allowed in worktree names"
@@ -38,15 +41,11 @@ module Worktrees
       base_ref ||= @repository.default_branch
 
       # Check if base reference exists
-      unless @repository.branch_exists?(base_ref)
-        raise GitError, "Base reference '#{base_ref}' not found"
-      end
+      raise GitError, "Base reference '#{base_ref}' not found" unless @repository.branch_exists?(base_ref)
 
       # Check for duplicate worktree
       existing = find_worktree(name)
-      if existing
-        raise ValidationError, "Worktree '#{name}' already exists"
-      end
+      raise ValidationError, "Worktree '#{name}' already exists" if existing
 
       # Create worktree path
       worktree_path = File.join(@config.expand_worktrees_root, name)
@@ -55,13 +54,13 @@ module Worktrees
       FileUtils.mkdir_p(@config.expand_worktrees_root)
 
       # Create the worktree
-      unless GitOperations.create_worktree(worktree_path, name, base_ref)
-        raise GitError, "Failed to create worktree '#{name}'"
-      end
+      raise GitError, "Failed to create worktree '#{name}'" unless GitOperations.create_worktree(worktree_path, name,
+                                                                                                 base_ref)
 
       # Verify worktree was created
       unless File.directory?(worktree_path)
-        raise FileSystemError, "Worktree directory was not created: #{worktree_path}"
+        raise FileSystemError,
+              "Worktree directory was not created: #{worktree_path}"
       end
 
       # Return the created worktree
@@ -120,9 +119,7 @@ module Worktrees
 
       # Check current state for warnings
       current = current_worktree
-      if current && current.dirty?
-        warn "Warning: Previous worktree '#{current.name}' has uncommitted changes"
-      end
+      warn "Warning: Previous worktree '#{current.name}' has uncommitted changes" if current&.dirty?
 
       # Change to worktree directory
       Dir.chdir(worktree.path)
@@ -135,31 +132,35 @@ module Worktrees
 
       # Safety checks
       if worktree.active?
-        raise StateError, "Cannot remove active worktree '#{name}'. Switch to a different worktree first"
+        raise StateError,
+              "Cannot remove active worktree '#{name}'. Switch to a different worktree first"
       end
 
       if worktree.dirty? && !options[:force_untracked]
-        raise StateError, "Worktree '#{name}' has uncommitted changes. Commit or stash changes, or use --force-untracked for untracked files only"
+        raise StateError,
+              "Worktree '#{name}' has uncommitted changes. Commit or stash changes, or use --force-untracked for untracked files only"
       end
 
       # Check for unpushed commits
       if GitOperations.has_unpushed_commits?(worktree.branch)
-        raise StateError, "Worktree '#{name}' has unpushed commits. Push commits first or use --force"
+        raise StateError,
+              "Worktree '#{name}' has unpushed commits. Push commits first or use --force"
       end
 
       # Remove the worktree
       force = options[:force_untracked] || options[:force]
-      unless GitOperations.remove_worktree(worktree.path, force: force)
-        raise GitError, "Failed to remove worktree '#{name}'"
-      end
+      raise GitError, "Failed to remove worktree '#{name}'" unless GitOperations.remove_worktree(worktree.path,
+                                                                                                 force: force)
 
       # Optionally delete branch
       if options[:delete_branch]
-        if GitOperations.is_merged?(worktree.branch)
-          GitOperations.delete_branch(worktree.branch)
-        else
-          raise StateError, "Branch '#{worktree.branch}' is not fully merged. Use merge-base check or --force"
+        unless GitOperations.is_merged?(worktree.branch)
+          raise StateError,
+                "Branch '#{worktree.branch}' is not fully merged. Use merge-base check or --force"
         end
+
+        GitOperations.delete_branch(worktree.branch)
+
       end
 
       true
@@ -179,16 +180,15 @@ module Worktrees
     def find_git_repository_root
       # Use git to find the main repository root (not worktree)
       result = `git rev-parse --git-common-dir 2>/dev/null`.strip
-      if $?.success? && !result.empty?
+      if $CHILD_STATUS.success? && !result.empty?
         # git-common-dir returns the .git directory, we need its parent
         File.dirname(result)
       else
         # Fallback: try to find repository by walking up directories
         current_dir = Dir.pwd
         while current_dir != '/'
-          if File.exist?(File.join(current_dir, '.git'))
-            return current_dir
-          end
+          return current_dir if File.exist?(File.join(current_dir, '.git'))
+
           current_dir = File.dirname(current_dir)
         end
         # Last fallback
@@ -221,14 +221,10 @@ module Worktrees
 
       # Use merge-base to find the best common ancestor
       result = `git merge-base #{branch_name} #{default_branch} 2>/dev/null`.strip
-      if $?.success? && !result.empty?
-        return default_branch
-      end
+      return default_branch if $CHILD_STATUS.success? && !result.empty?
 
       # Fallback: if branch exists and default branch exists, assume default
-      if GitOperations.branch_exists?(branch_name) && GitOperations.branch_exists?(default_branch)
-        return default_branch
-      end
+      return default_branch if GitOperations.branch_exists?(branch_name) && GitOperations.branch_exists?(default_branch)
 
       'unknown'
     rescue StandardError

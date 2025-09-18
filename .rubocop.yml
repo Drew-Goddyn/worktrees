@@ -1,0 +1,37 @@
+AllCops:
+  NewCops: enable
+
+# Relax metrics for CLI tool - focus on functionality over strict metrics
+Metrics/MethodLength:
+  Max: 25
+
+Metrics/AbcSize:
+  Max: 30
+
+Metrics/CyclomaticComplexity:
+  Max: 12
+
+Metrics/PerceivedComplexity:
+  Max: 12
+
+Metrics/ParameterLists:
+  Max: 8
+
+Metrics/ClassLength:
+  Max: 150
+
+# Disable documentation requirement - this is a CLI tool with clear naming
+Style/Documentation:
+  Enabled: false
+
+# Allow predicate method naming patterns common in Ruby
+Naming/PredicatePrefix:
+  Enabled: false
+
+# Allow boolean parameters for CLI options - they're clear in context
+Style/OptionalBooleanParameter:
+  Enabled: false
+
+# Format strings are fine for CLI output - annotated tokens add noise
+Style/FormatStringToken:
+  Enabled: false

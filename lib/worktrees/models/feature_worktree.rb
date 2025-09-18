@@ -5,7 +5,7 @@ require 'time'
 module Worktrees
   module Models
     class FeatureWorktree
-      NAME_PATTERN = /^[0-9]{3}-[a-z0-9-]{1,40}$/.freeze
+      NAME_PATTERN = /^[0-9]{3}-[a-z0-9-]{1,40}$/
       RESERVED_NAMES = %w[main master].freeze
 
       attr_reader :name, :path, :branch, :base_ref, :status, :created_at, :repository_path
@@ -74,13 +74,15 @@ module Worktrees
       def validate!
         # First check basic format
         unless @name.is_a?(String) && @name.match?(NAME_PATTERN)
-          raise ValidationError, "Invalid name format '#{@name}'. Names must match pattern: NNN-kebab-feature"
+          raise ValidationError,
+                "Invalid name format '#{@name}'. Names must match pattern: NNN-kebab-feature"
         end
 
         # Check for reserved names
         feature_part = @name.split('-', 2)[1]
         if feature_part && RESERVED_NAMES.include?(feature_part.downcase)
-          raise ValidationError, "Reserved name '#{feature_part}' not allowed in worktree names"
+          raise ValidationError,
+                "Reserved name '#{feature_part}' not allowed in worktree names"
         end
 
         raise ValidationError, 'Path cannot be empty' if @path.nil? || @path.empty?
