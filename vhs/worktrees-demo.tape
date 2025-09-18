@@ -13,25 +13,29 @@ Set CursorBlink true
 Set WindowBar Rings
 Set WindowBarSize 40
 Set Padding 20
-Set TypingSpeed 80ms
-Set PlaybackSpeed 1
-
-# Optional: Add some retro VHS effects
-Set LoopOffset 50%
+Set TypingSpeed 50ms
 
 # Start recording
 Type "# Welcome to worktrees - Hold on tight! 🎢"
 Enter
 Sleep 1s
 
-Type "worktrees --version"
+# Create alias for demo (won't error)
+Hide
+Type "alias worktrees='echo'"
+Enter
+Show
+
+Type "# Check version"
 Enter
 Sleep 500ms
-Type@500ms "worktrees v0.9.2.1.alpha.rc2.FINAL(2) (EXPERIMENTAL)"
+
+Type "echo 'worktrees v0.9.2.1.alpha.rc2.FINAL(2)'"
 Enter
-Type@500ms "⚠️  WARNING: May contain bugs"
+Sleep 300ms
+Type "echo '⚠️  WARNING: May contain bugs'"
 Enter
-Type@500ms "⚠️  WARNING: Side effects include productivity"
+Type "echo '⚠️  WARNING: Side effects include productivity'"
 Enter
 Sleep 1.5s
 
@@ -44,41 +48,33 @@ Type "# Let's create a new worktree (fingers crossed! 🤞)"
 Enter
 Sleep 1s
 
-Type "worktrees create 001-please-work"
-Enter
-Sleep 500ms
-Type@100ms "INITIATING WORKTREE CREATION SEQUENCE..."
-Enter
-Sleep 300ms
-
-# Progress bar animation
-Type "[░░░░░░░░░░░░░░░░░░░░] 0%"
-Backspace@50ms 24
-Type "[████░░░░░░░░░░░░░░░░] 20%"
-Sleep 500ms
-Backspace@50ms 25
-Type "[████████░░░░░░░░░░░░] 40%"
-Sleep 500ms
-Backspace@50ms 25
-Type "[████████████░░░░░░░░] 60%"
-Sleep 500ms
-Backspace@50ms 25
-Type "[████████████████░░░░] 80%"
-Sleep 800ms
-Backspace@50ms 25
-Type "[████████████████████] 100%"
+Type "echo 'INITIATING WORKTREE CREATION SEQUENCE...'"
 Enter
 Sleep 500ms
 
-Type@100ms "⚠️  ERROR: Coffee levels critically low!"
+Type "echo '[████░░░░░░░░░░░░░░░░] 20%'"
+Enter
+Sleep 500ms
+Type "echo '[████████░░░░░░░░░░░░] 40%'"
+Enter
+Sleep 500ms
+Type "echo '[████████████░░░░░░░░] 60%'"
+Enter
+Sleep 500ms
+Type "echo '[████████████████░░░░] 87% ...'"
 Enter
 Sleep 1s
-Type@100ms "☕ INJECTING EMERGENCY CAFFEINE..."
+Type "echo '⚠️  ERROR: Coffee levels critically low!'"
 Enter
 Sleep 1s
-Type@100ms "✓ Worktree 'created' at ~/.worktrees/001-please-work"
+Type "echo '☕ INJECTING EMERGENCY CAFFEINE...'"
 Enter
-Type@100ms "  Note: Existence not guaranteed"
+Sleep 1s
+Type "echo '[████████████████████] 100%'"
+Enter
+Type "echo '✓ Worktree created at ~/.worktrees/001-please-work'"
+Enter
+Type "echo '  Note: Existence not guaranteed'"
 Enter
 Sleep 2s
 
@@ -87,29 +83,31 @@ Type "# Let's see what we've got..."
 Enter
 Sleep 1s
 
-Type "worktrees list"
+Type "echo 'SCANNING FOR SURVIVORS...'"
 Enter
 Sleep 500ms
-Type@100ms "SCANNING FOR SURVIVORS..."
+
+Type "cat << 'EOF'"
 Enter
-Sleep 500ms
-Type@100ms "╔════════════════════════════════════════════╗"
+Type "╔════════════════════════════════════════════╗"
 Enter
-Type@100ms "║  ID               STATUS    PATH           ║"
+Type "║  ID               STATUS    PATH           ║"
 Enter
-Type@100ms "╠════════════════════════════════════════════╣"
+Type "╠════════════════════════════════════════════╣"
 Enter
-Type@100ms "║* 001-please-work  zombie    ~/.worktrees/  ║"
+Type "║* 001-please-work  zombie    ~/.worktrees/  ║"
 Enter
-Type@100ms "║  002-help-me      haunted   ~/.worktrees/  ║"
+Type "║  002-help-me      haunted   ~/.worktrees/  ║"
 Enter
-Type@100ms "║  003-final-final  cursed    ~/.worktrees/  ║"
+Type "║  003-final-final  cursed    ~/.worktrees/  ║"
 Enter
-Type@100ms "║  999-the-end      ḩ̸ë̷ḽṕ̶     [REDACTED]     ║"
+Type "║  999-the-end      ḩ̸ë̷ḽṕ̶     [REDACTED]     ║"
 Enter
-Type@100ms "╚════════════════════════════════════════════╝"
+Type "╚════════════════════════════════════════════╝"
 Enter
-Type@100ms "⚠️  4 worktrees found (3 possibly functional)"
+Type "⚠️  4 worktrees found (3 possibly functional)"
+Enter
+Type "EOF"
 Enter
 Sleep 2s
 
@@ -118,20 +116,17 @@ Type "# Let's switch to a worktree!"
 Enter
 Sleep 1s
 
-Type "worktrees switch 002-help-me"
-Enter
-Sleep 500ms
-Type@100ms "🎲 Rolling dice for success..."
+Type "echo '🎲 Rolling dice for success...'"
 Enter
 Sleep 1s
-Type@100ms "🎲 Rolled: 4/20 (Not great, not terrible)"
+Type "echo '🎲 Rolled: 4/20 (Not great, not terrible)'"
 Enter
 Sleep 500ms
-Type@100ms "✓ Switched to: 002-help-me"
+Type "echo '✓ Switched to: 002-help-me'"
 Enter
-Type@100ms "  Current reality: Questionable"
+Type "echo '  Current reality: Questionable'"
 Enter
-Type@100ms "  Quantum state: Superposition"
+Type "echo '  Quantum state: Superposition'"
 Enter
 Sleep 2s
 
@@ -140,24 +135,25 @@ Type "# Quick status check..."
 Enter
 Sleep 1s
 
-Type "worktrees status"
+Type "cat << 'EOF'"
 Enter
-Sleep 500ms
-Type@200ms "CURRENT WORKTREE STATUS:"
+Type "CURRENT WORKTREE STATUS:"
 Enter
-Type@100ms "━━━━━━━━━━━━━━━━━━━━━━"
+Type "━━━━━━━━━━━━━━━━━━━━━━"
 Enter
-Type@100ms "Name:        002-help-me"
+Type "Name:        002-help-me"
 Enter
-Type@100ms "Health:      74% (↓ declining)"
+Type "Health:      74% (↓ declining)"
 Enter
-Type@100ms "Commits:     Yes"
+Type "Commits:     Yes"
 Enter
-Type@100ms "Sanity:      404 Not Found"
+Type "Sanity:      404 Not Found"
 Enter
-Type@100ms "Last Error:  2 minutes ago"
+Type "Last Error:  2 minutes ago"
 Enter
-Type@100ms "Next Error:  ~30 seconds"
+Type "Next Error:  ~30 seconds"
+Enter
+Type "EOF"
 Enter
 Sleep 2s
 
@@ -166,47 +162,40 @@ Type "# Let's try removing that cursed worktree..."
 Enter
 Sleep 1s
 
-Type "worktrees remove 999-the-end"
+Type "echo '⚠️  WARNING: This worktree appears to be sentient'"
 Enter
-Sleep 500ms
-Type@100ms "⚠️  WARNING: This worktree appears to be sentient"
+Type "echo -n 'Are you SURE? [y/N]: '; read -r ans; echo $ans"
 Enter
-Sleep 500ms
-Type@100ms "Are you SURE you want to remove '999-the-end'? [y/N]: "
 Sleep 500ms
 Type "y"
 Enter
 Sleep 300ms
-Type@100ms "Are you REALLY sure? [y/N]: "
+
+Type "echo -n 'Are you REALLY sure? [y/N]: '; read -r ans; echo $ans"
+Enter
 Sleep 500ms
 Type "y"
 Enter
 Sleep 300ms
-Type@100ms "Like, REALLY REALLY sure? [y/N]: "
+
+Type "echo -n 'Like, REALLY REALLY sure? [y/N]: '; read -r ans; echo $ans"
+Enter
 Sleep 500ms
 Type "Y"
 Enter
 Sleep 300ms
-Type@100ms "Please type 'I accept the consequences': "
-Sleep 800ms
-Type "I accept the consequences"
-Enter
-Sleep 1s
-Type@100ms "Attempting removal..."
+
+Type "echo 'Attempting removal...'"
 Enter
 Sleep 500ms
-Type@200ms "."
-Sleep 500ms
-Type@200ms "."
-Sleep 500ms
-Type@200ms "."
+Type "echo -n '.'; sleep 0.5; echo -n '.'; sleep 0.5; echo '.'"
 Enter
-Sleep 1s
-Type@100ms "❌ ERROR: This worktree has rejected your reality"
+Sleep 2s
+Type "echo '❌ ERROR: This worktree has rejected your reality'"
 Enter
-Type@100ms "         and substituted its own"
+Type "echo '         and substituted its own'"
 Enter
-Type@100ms "Good luck! 🍀"
+Type "echo 'Good luck! 🍀'"
 Enter
 Sleep 2s
 
@@ -215,33 +204,33 @@ Type "# One more thing..."
 Enter
 Sleep 1s
 
-Type "worktrees --help"
+Type "cat << 'EOF'"
 Enter
-Sleep 500ms
-Type@100ms "HELP? THERE IS NO HELP"
+Type "HELP? THERE IS NO HELP"
 Enter
-Type@100ms "Only worktrees."
+Type "Only worktrees."
 Enter
-Sleep 1s
-Type@100ms ""
+Type ""
 Enter
-Type@100ms "But if you insist:"
+Type "But if you insist:"
 Enter
-Type@100ms "  create  - May create a worktree"
+Type "  create  - May create a worktree"
 Enter
-Type@100ms "  list    - Shows some worktrees"
+Type "  list    - Shows some worktrees"
 Enter
-Type@100ms "  switch  - Quantum leap between realities"
+Type "  switch  - Quantum leap between realities"
 Enter
-Type@100ms "  remove  - Attempt to destroy (usually fails)"
+Type "  remove  - Attempt to destroy (usually fails)"
 Enter
-Type@100ms "  status  - Check your sanity levels"
+Type "  status  - Check your sanity levels"
 Enter
-Type@100ms ""
+Type ""
 Enter
-Type@100ms "Remember: NNN-kebab-case or the naming"
+Type "Remember: NNN-kebab-case or the naming"
 Enter
-Type@100ms "          police will find you 🚔"
+Type "          police will find you 🚔"
+Enter
+Type "EOF"
 Enter
 Sleep 3s
 

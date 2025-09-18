@@ -1,14 +1,24 @@
 # frozen_string_literal: true
 
 module GitHelpers
+  def default_branch
+    # Get the current default branch (main or master)
+    result = run_command_and_stop('git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null || git branch --show-current 2>/dev/null || echo "main"', fail_on_error: false)
+    branch = result.stdout.strip.gsub('refs/remotes/origin/', '')
+    branch.empty? ? 'main' : branch
+  end
+
   def setup_test_repo
     cleanup_git_worktrees
     run_command('git init')
     run_command('git config user.email "test@example.com"')
     run_command('git config user.name "Test User"')
+    run_command('git config init.defaultBranch main')
     write_file('README.md', '# Test Repository')
     run_command('git add README.md')
     run_command('git commit -m "Initial commit"')
+    # Ensure we're on main branch after first commit
+    run_command('git branch -M main', fail_on_error: false)
   end
 
   def setup_test_repo_with_branch(branch_name)
@@ -80,8 +90,12 @@ module GitHelpers
       # If git commands fail, fall back to directory cleanup
     end
 
-    # Clean up any remaining directory and prune
-    run_command('rm -rf .worktrees 2>/dev/null || true')
-    run_command('git worktree prune 2>/dev/null || true')
+    # Clean up any remaining directory and prune thoroughly
+    run_command('rm -rf .worktrees 2>/dev/null || true', fail_on_error: false)
+    run_command('git worktree prune --verbose 2>/dev/null || true', fail_on_error: false)
+
+    # Additional cleanup for CI environment - remove any git locks
+    run_command('rm -rf .git/worktrees 2>/dev/null || true', fail_on_error: false)
+    run_command('find .git -name "*.lock" -delete 2>/dev/null || true', fail_on_error: false)
   end
 end
