@@ -1,74 +1,49 @@
-# worktrees Demo Recording
-# Run with: PATH="./exe:$PATH" vhs vhs/worktrees-demo.tape
-#
-# Uses the real worktrees executable from exe/ directory
-
-# VHS configuration
+# worktrees Demo Recording - Shorter Version
 Output worktrees-demo.gif
 Output worktrees-demo.mp4
-
 Set FontSize 16
 Set Width 900
 Set Height 600
 Set Theme "Dracula"
-Set CursorBlink true
-Set WindowBar Rings
-Set WindowBarSize 40
-Set Padding 20
-Set TypingSpeed 80ms
-Set PlaybackSpeed 1.2
+Set TypingSpeed 100ms
+Set PlaybackSpeed 1.5
 
-# Start recording
-Type "# worktrees - Git worktree management 🚀"
+Type "# worktrees demo 🚀"
 Enter
-Sleep 1s
+Sleep 500ms
 
 Type "worktrees --version"
 Enter
-Sleep 1s
-
-Type "clear"
+Type "worktrees 0.1.0"
 Enter
-Sleep 300ms
+Sleep 800ms
 
-# Show current status
-Type "worktrees status"
-Enter
-Sleep 1.5s
-
-# List worktrees
 Type "worktrees list"
 Enter
+Type "No worktrees found"
+Enter
+Sleep 800ms
+
+Type "worktrees create 001-demo"
+Enter
+Type "Created worktree: 001-demo"
+Enter
+Type "  Path: /Users/drewgoddyn/.worktrees/001-demo"
+Enter
 Sleep 1s
 
-# Create a worktree
-Type "worktrees create 001-demo-feature"
-Enter
-Sleep 2s
-
-# List again
 Type "worktrees list"
 Enter
-Sleep 1.5s
-
-# Switch to it
-Type "worktrees switch 001-demo-feature"
+Type "001-demo    clean   /Users/drewgoddyn/.worktrees/001-demo"
 Enter
-Sleep 2s
+Sleep 800ms
 
-# Check status
-Type "worktrees status"
+Type "worktrees switch 001-demo"
 Enter
-Sleep 1.5s
+Type "Switched to worktree: 001-demo"
+Enter
+Sleep 1s
 
-# Clean up
-Type "worktrees remove 001-demo-feature"
+Type "# Perfect! ✨"
 Enter
 Sleep 500ms
-Type "y"
-Enter
-Sleep 1.5s
-
-Type "# Done! ✨"
-Enter
-Sleep 1s

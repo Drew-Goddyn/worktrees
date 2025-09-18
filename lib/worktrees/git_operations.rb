@@ -16,8 +16,15 @@ module Worktrees
       end
 
       def list_worktrees
-        output = `git worktree list --porcelain`
-        raise GitError, 'Failed to list worktrees: git command failed' unless $CHILD_STATUS.success?
+        output = `git worktree list --porcelain 2>&1`
+        unless $CHILD_STATUS.success?
+          raise GitError, 'Failed to list worktrees: git command failed'
+        end
+
+        # Additional check - if not in a git repo, the output will contain error messages
+        if output.include?('not a git repository') || output.include?('fatal:')
+          raise GitError, 'Failed to list worktrees: not in a git repository'
+        end
 
         parse_worktree_list(output)
       rescue StandardError => e
@@ -41,6 +48,8 @@ module Worktrees
       end
 
       def is_clean?(worktree_path)
+        # git diff-index --quiet returns 0 if clean, 1 if dirty
+        # We want to return true if clean, false if dirty
         system('git', 'diff-index', '--quiet', 'HEAD', chdir: worktree_path)
       end
 
