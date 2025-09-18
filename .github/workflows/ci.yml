@@ -24,5 +24,12 @@ jobs:
         ruby-version: ${{ matrix.ruby-version }}
         bundler-cache: true
 
+    - name: Configure Git for tests
+      run: |
+        git config --global init.defaultBranch main
+        git config --global advice.defaultBranchName false
+        git config --global user.email "ci@github.com"
+        git config --global user.name "CI Runner"
+
     - name: Run CI suite
       run: bundle exec rake ci

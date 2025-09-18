@@ -68,10 +68,11 @@ module IsolatedTestEnvironment
     ensure_in_isolated_environment!
 
     # Initialize git with consistent configuration
-    system('git', 'init', out: File::NULL, err: File::NULL)
+    system('git', 'init', '--initial-branch=main', out: File::NULL, err: File::NULL)
     system('git', 'config', 'user.email', 'test@example.com')
     system('git', 'config', 'user.name', 'Test User')
     system('git', 'config', 'init.defaultBranch', 'main')
+    system('git', 'config', 'advice.defaultBranchName', 'false')
 
     # Create initial commit to establish main branch
     File.write('README.md', "# Test Repository #{@test_id}")

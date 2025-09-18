@@ -15,10 +15,11 @@ module GitHelpers
 
     # Only initialize git if not already in a git repository
     unless Dir.exist?('.git')
-      run_command('git init')
+      run_command('git init --initial-branch=main')
       run_command('git config user.email "test@example.com"')
       run_command('git config user.name "Test User"')
       run_command('git config init.defaultBranch main')
+      run_command('git config advice.defaultBranchName false')
     end
 
     # Set up initial content and commit (safe even if repo exists)

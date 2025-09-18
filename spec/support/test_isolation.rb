@@ -158,10 +158,11 @@ module TestIsolation
       # Initialize the workspace itself as a git repository
       Dir.chdir(@workspace_path) do
         # Initialize git with consistent configuration
-        system('git', 'init')
+        system('git', 'init', '--initial-branch=main')
         system('git', 'config', 'user.email', 'test@example.com')
         system('git', 'config', 'user.name', 'Test User')
         system('git', 'config', 'init.defaultBranch', 'main')
+        system('git', 'config', 'advice.defaultBranchName', 'false')
 
         # Create initial commit to establish main branch
         File.write('README.md', "# Test Repository #{@test_id}")
