@@ -83,22 +83,6 @@ RSpec.describe Worktrees::Models::WorktreeConfig do
     end
   end
 
-  describe '#expand_worktrees_root' do
-    it 'expands tilde in path' do
-      config = described_class.new(worktrees_root: '~/.worktrees')
-
-      expanded = config.expand_worktrees_root
-      expect(expanded).to start_with('/')
-      expect(expanded).to end_with('.worktrees')
-    end
-
-    it 'returns absolute paths unchanged' do
-      config = described_class.new(worktrees_root: '/absolute/path')
-
-      expanded = config.expand_worktrees_root
-      expect(expanded).to eq('/absolute/path')
-    end
-  end
 
   describe '#to_h' do
     it 'returns hash representation' do

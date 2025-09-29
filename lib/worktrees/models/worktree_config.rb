@@ -13,7 +13,7 @@ module Worktrees
       attr_reader :worktrees_root, :default_base, :force_cleanup, :name_pattern
 
       def initialize(worktrees_root: DEFAULT_ROOT, default_base: nil, force_cleanup: false, name_pattern: NAME_PATTERN)
-        @worktrees_root = worktrees_root
+        @worktrees_root = File.expand_path(worktrees_root)
         @default_base = default_base
         @force_cleanup = force_cleanup
         @name_pattern = name_pattern
@@ -53,14 +53,6 @@ module Worktrees
         !RESERVED_NAMES.include?(feature_part.downcase)
       end
 
-      def expand_worktrees_root
-        if @worktrees_root.start_with?('~')
-          @worktrees_root.sub('~', home_directory)
-        else
-          File.expand_path(@worktrees_root)
-        end
-      end
-
       def to_h
         {
           worktrees_root: @worktrees_root,
@@ -68,12 +60,6 @@ module Worktrees
           force_cleanup: @force_cleanup,
           name_pattern: @name_pattern.source
         }
-      end
-
-      private
-
-      def home_directory
-        self.class.home_directory
       end
 
       private_class_method def self.home_directory
