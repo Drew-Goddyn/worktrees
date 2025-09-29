@@ -60,7 +60,7 @@ module Worktrees
           current_worktree: worktree.to_h,
           repository: {
             root_path: manager.repository.root_path,
-            worktrees_root: manager.config.expand_worktrees_root,
+            worktrees_root: manager.config.worktrees_root,
             default_branch: manager.repository.default_branch,
             remote_url: manager.repository.remote_url
           }
@@ -73,7 +73,7 @@ module Worktrees
           data = {
             repository: {
               root_path: manager.repository.root_path,
-              worktrees_root: manager.config.expand_worktrees_root,
+              worktrees_root: manager.config.worktrees_root,
               default_branch: manager.repository.default_branch,
               remote_url: manager.repository.remote_url
             }
@@ -81,7 +81,7 @@ module Worktrees
           puts JSON.pretty_generate(data)
         else
           puts "Repository: #{manager.repository.root_path}"
-          puts "Worktrees root: #{manager.config.expand_worktrees_root}"
+          puts "Worktrees root: #{manager.config.worktrees_root}"
           puts "Remote: #{manager.repository.remote_url}" if manager.repository.remote_url
         end
       end

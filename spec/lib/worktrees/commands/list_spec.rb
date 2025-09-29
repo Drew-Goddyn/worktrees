@@ -17,7 +17,7 @@ RSpec.describe Worktrees::Commands::List, type: :aruba do
       create_test_worktree('002-other')
       make_dirty_worktree('002-other')
 
-      expect { command.call }.to output(/001-test.*002-other/).to_stdout
+      expect { command.call }.to output(/001-test.*002-other/m).to_stdout
     end
 
     it 'shows message when no worktrees exist' do

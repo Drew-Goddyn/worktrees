@@ -24,7 +24,7 @@ module Worktrees
       end
 
       def worktrees_path
-        config.expand_worktrees_root
+        config.worktrees_root
       end
 
       def config

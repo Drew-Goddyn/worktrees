@@ -48,10 +48,10 @@ module Worktrees
       raise ValidationError, "Worktree '#{name}' already exists" if existing
 
       # Create worktree path
-      worktree_path = File.join(@config.expand_worktrees_root, name)
+      worktree_path = File.join(@config.worktrees_root, name)
 
       # Create worktrees root directory if it doesn't exist
-      FileUtils.mkdir_p(@config.expand_worktrees_root)
+      FileUtils.mkdir_p(@config.worktrees_root)
 
       # Create the worktree
       raise GitError, "Failed to create worktree '#{name}'" unless GitOperations.create_worktree(worktree_path, name,
